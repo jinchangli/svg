@@ -72,6 +72,8 @@
       });
 
       selectedPath.attr({d: pathStr});
+
+        $("#cutPath").toggleClass("disabled", true);
     }
 
     var state = (function() {
