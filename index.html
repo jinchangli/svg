@@ -26,38 +26,56 @@
             stroke-opacity: 1;
             stroke-dasharray: none
         }
-        
+
         g.selected{
             stroke: red;
         }
-        
+
         circle {
             fill: none;
             stroke: black;
             stroke-width: 2;
         }
-        
+
+        circle.dot{
+          fill: black;
+          stroke:black;
+          stroke-width:1;
+        }
+
+        circle.dot:hover,
+        circle.dot.selected{
+          fill: red;
+          stroke:red;
+          stroke-width:1;
+        }
+
         line {
             fill: none;
             stroke: black;
             stroke-width: 2;
         }
-        
+
         text {
             stroke-width: 1;
+            fill:black;
         }
+
+          g.selected text{
+            fill:red;
+          }
     </style>
 </head>
 
 <body>
 
     <div class="operButtons" data-example-id="single-button-dropdown">
-         <button type="button" id="smooth" class="btn btn-primary disabled" aria-haspopup="true" aria-expanded="false"> 平滑 </button>
-         <button type="button" class="btn btn-primary disabled" aria-haspopup="true" aria-expanded="false">Primary </button>
-         <button type="button" class="btn btn-success disabled" aria-haspopup="true" aria-expanded="false">Success </button>
+         <button type="button" id="smooth" class="btn btn-primary disabled" aria-haspopup="true" aria-expanded="false"> 变平滑 </button>
+         <button type="button" id="cutPath" class="btn btn-primary disabled" aria-haspopup="true" aria-expanded="false">删除点集</button>
+         <!-- <button type="button" class="btn btn-success disabled" aria-haspopup="true" aria-expanded="false">Success </button>
          <button type="button" class="btn btn-info disabled" aria-haspopup="true" aria-expanded="false">Info </button>
          <button type="button" class="btn btn-warning disabled" aria-haspopup="true" aria-expanded="false">Warning </button>
-         <button type="button" class="btn btn-danger disabled" aria-haspopup="true" aria-expanded="false">Danger </button>
+         <button type="button" class="btn btn-danger disabled" aria-haspopup="true" aria-expanded="false">Danger </button> -->
     </div>
     <svg id="gcgmap" height="560" width="960">
 
