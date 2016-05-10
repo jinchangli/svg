@@ -7,83 +7,32 @@
     <script src="plotly-latest.min.js"></script>
     <!-- <script src="http://cdn.jsdelivr.net/walkway/0.0.5/walkway.min.js"></script> -->
     <link href="bootstrap.min.css" rel="stylesheet">
+    <link href="site.css" rel="stylesheet">
+    <link href="svg.css" rel="stylesheet">
     <script src="snap.svg-min.js"></script>
     <script src="jquery-1.12.3.min.js"></script>
-    <script src="gcg.js"></script>
-    <style>
-        .operButtons{
-            margin-top: 20px;
-        }
-    </style>
-    <style>
-        g {
-            fill: none;
-            stroke: #000;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-            stroke-miterlimit: 4;
-            stroke-opacity: 1;
-            stroke-dasharray: none
-        }
-
-        g.selected{
-            stroke: red;
-        }
-
-        circle {
-            fill: none;
-            stroke: black;
-            stroke-width: 2;
-        }
-
-        circle.dot{
-          fill: black;
-          stroke:black;
-          stroke-width:1;
-        }
-
-        circle.dot:hover{
-          fill: #777;
-          stroke:#777;
-        }
-
-        circle.dot.selected{
-          fill: red;
-          stroke:red;
-          stroke-width:1;
-        }
-
-        line {
-            fill: none;
-            stroke: black;
-            stroke-width: 2;
-        }
-
-        text {
-            stroke-width: 1;
-            fill:black;
-        }
-
-          g.selected text{
-            fill:red;
-          }
-    </style>
+    <script src="gcg2.js"></script>
 </head>
 
 <body>
-
-    <div class="operButtons" data-example-id="single-button-dropdown">
-         <button type="button" id="smooth" class="btn btn-primary disabled" aria-haspopup="true" aria-expanded="false"> 变平滑 </button>
-         <button type="button" id="cutPath" class="btn btn-primary disabled" aria-haspopup="true" aria-expanded="false">删除点集</button>
-         <!-- <button type="button" class="btn btn-success disabled" aria-haspopup="true" aria-expanded="false">Success </button>
+  <div id="operationButtons">
+    <button type="button" class="smooth btn btn-primary" aria-haspopup="true" aria-expanded="false"> 平滑曲线 </button>
+    <button type="button" class="cutPath btn btn-primary" aria-haspopup="true" aria-expanded="false">重画曲线</button>
+  </div>
+    <div style="display:none" class="operButtons" data-example-id="single-button-dropdown">
+        <button type="button" id="smooth" class="btn btn-primary disabled" aria-haspopup="true" aria-expanded="false"> 平滑曲线 </button>
+        <button type="button" id="cutPath" class="btn btn-primary disabled" aria-haspopup="true" aria-expanded="false">重画曲线</button>
+        <!-- <button type="button" class="btn btn-success disabled" aria-haspopup="true" aria-expanded="false">Success </button>
          <button type="button" class="btn btn-info disabled" aria-haspopup="true" aria-expanded="false">Info </button>
          <button type="button" class="btn btn-warning disabled" aria-haspopup="true" aria-expanded="false">Warning </button>
          <button type="button" class="btn btn-danger disabled" aria-haspopup="true" aria-expanded="false">Danger </button> -->
     </div>
+    <div id="messageBox" style="height:50px;">
+
+    </div>
     <svg id="gcgmap" height="560" width="960">
 
-</svg>
+    </svg>
 
     <div id="tester" style="width:600px;height:250px;"></div>
 </body>

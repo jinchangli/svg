@@ -1,0 +1,66 @@
+g {
+    fill: none;
+    stroke: #000;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-miterlimit: 4;
+    stroke-opacity: 1;
+    stroke-dasharray: none
+}
+
+g.selected {
+    stroke: red;
+}
+
+circle {
+    fill: none;
+    stroke: black;
+    stroke-width: 2;
+}
+
+circle.dot {
+    fill: black;
+    stroke: black;
+    stroke-width: 1;
+}
+
+circle.dot:hover {
+    fill: #777;
+    stroke: #777;
+}
+
+circle.dot.selected,
+circle.dot.selected:hover {
+    fill: red;
+    stroke: red;
+    stroke-width: 1;
+}
+
+line {
+    fill: none;
+    stroke: black;
+    stroke-width: 2;
+}
+
+text {
+    stroke-width: 1;
+    fill: black;
+    -webkit-touch-callout: none;
+    /* iOS Safari */
+    -webkit-user-select: none;
+    /* Chrome/Safari/Opera */
+    -khtml-user-select: none;
+    /* Konqueror */
+    -moz-user-select: none;
+    /* Firefox */
+    -ms-user-select: none;
+    /* Internet Explorer/Edge */
+    user-select: none;
+    /* Non-prefixed version, currently
+                         not supported by any browser */
+}
+
+g.selected text {
+    fill: red;
+}

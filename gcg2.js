@@ -1,4 +1,59 @@
 (function($) {
+    var Process = function(name) {
+        this.name = name;
+    }
+
+    Process.prototype = {
+        name: null,
+        steps: null,
+        elements: null,
+        actions: null,
+        _currentStepIndex: null,
+        doActions: function() {
+            var that = this;
+            if (this.actions && this.actions.length > 0) {
+                $.each(this.actions, function(index, item) {
+                    item(that.elements);
+                });
+            }
+        },
+        start: function() {
+            var that = this;
+            that._currentStepIndex = -1;
+            that.nextStep();
+        },
+        nextStep: function() {
+            var that = this;
+            if (that.steps && that.steps.length > (that._currentStepIndex + 1)) {
+                that._currentStepIndex++;
+                that.steps[that._currentStepIndex]();
+            } else {
+                that.doActions();
+            }
+        }
+    };
+
+    var SmoothProcess = function() {
+        var that = this;
+        var step1 = function() {
+            $("#messageBox").text("请首先选择一条等值线");
+            state.pathSelectedEvent(function() {
+                state.removePathSelectedEvent();
+                that.nextStep();
+            });
+        }
+
+        var step2 = function() {
+            $("#messageBox").text("succeed");
+        }
+
+        this.steps = [];
+        this.steps.push(step1);
+        this.steps.push(step2);
+    }
+
+    SmoothProcess.prototype = new Process();
+
 
     var highLightDotsInPath = function(path) {
         var $path = Snap(path);
@@ -123,12 +178,16 @@
     var state = (function() {
         var selectedPath = null;
         var selectingPathDotsStatus = false;
+        var pathSelectedListener = null;
 
         var pathSelected = function(path) {
             $(path).parent().addClass("selected");
             selectedPath = path;
             $("#smooth").removeClass("disabled");
             highLightDotsInPath(path);
+            if (pathSelectedListener) {
+                pathSelectedListener();
+            }
         }
 
         var clearSelectedState = function(path) {
@@ -166,8 +225,13 @@
             },
             stopSelectingPathDots: function() {
                 selectingPathDotsStatus = false;
+            },
+            pathSelectedEvent: function(callBack) {
+                pathSelectedListener = callBack;
+            },
+            removePathSelectedEvent: function(callBack) {
+                pathSelectedListener = null;
             }
-
         };
 
     })();
@@ -251,6 +315,21 @@
             }
         });
 
+
+        var currentProcess = null;
+        $("#operationButtons>button").click(function(event) {
+            if ($(this).is(".selected")) {
+                $(this).removeClass("selected");
+            } else {
+                $("#operationButtons>button.selected").removeClass("selected")
+                $(this).addClass("selected");
+                if (currentProcess == null) {
+                    currentProcess = new SmoothProcess();
+                    currentProcess.start();
+                }
+            }
+        });
+
         $("#smooth").click(function(event) {
             event.stopPropagation();
 
@@ -299,20 +378,3 @@
         });
     });
 })(jQuery);
-
-//    document.addEventListener('DOMContentLoaded', function() {
-//                var s = Snap("#gcgmap");
-//                 s.node.onclick = function(event){
-//                    if(event.target.nodeName === "path"){
-//                        pathClick(event.target);
-//                    }
-
-//                 }
-
-
-//         });
-
-//         function pathClick(node){
-//             var sNode = Snap(node);
-//             sNode.attr({stroke:'red'});
-//         }

@@ -1,0 +1,27 @@
+.operButtons {
+    margin-top: 20px;
+}
+#operationButtons>button.selected {
+  color: #fff;
+ background-color: #d9534f;
+ border-color: #d43f3a;
+}
+
+.btn-default:focus,
+.btn-default.focus,
+.btn-default {
+  color: #333;
+  background-color: #fff;
+  border-color: #ccc;
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn.active:focus,
+.btn.focus,
+.btn:active.focus,
+.btn.active.focus {
+  outline: none;
+  outline: none;
+  outline-offset: -2px;
+}
