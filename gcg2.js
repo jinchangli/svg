@@ -59,7 +59,6 @@
     SmoothProcess.prototype = new Process();
     SmoothProcess.prototype.smoothPath = function(path) {
       var pathStr = $(path).attr("d");
-      var pathArray = pathStr.split(" ");
 
       var points = Snap.parsePathString(pathStr);
       points = smoothDots(points);
@@ -112,7 +111,7 @@
         var start = 0,
             end = points.length - 1;
 
-        if (points[end][0] == "z") {
+        if (points[end][0] == "z" || points[end][0] == "Z") {
             end--;
         }
 
@@ -133,9 +132,9 @@
         if (points) {
             var str = "";
             $.each(points, function(index, ele) {
-                if (ele[0] == "M") {
+                if (ele[0] == "M" || ele[0] == "m") {
                     str += "M" + ele[1] + "," + ele[2] + " ";
-                } else if (ele[0] == "z") {
+                } else if (ele[0] == "z" || ele[0] == "Z") {
                     str += "z";
                 } else {
                     str += ele[1] + "," + ele[2] + " ";
