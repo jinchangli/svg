@@ -1,4 +1,6 @@
 (function($) {
+  var pathDblClicked = null;
+
     var Process = function(name) {
         this.name = name;
     }
@@ -19,7 +21,7 @@
         },
         start: function() {
             var that = this;
-            that._currentStepIndex = -1;
+            that.reset();
             that.nextStep();
         },
         nextStep: function() {
@@ -30,17 +32,19 @@
             } else {
                 that.doActions();
             }
+        },
+        reset:function() {
+            this._currentStepIndex = -1;
         }
     };
 
     var SmoothProcess = function() {
         var that = this;
         var step1 = function() {
-            $("#messageBox").text("请首先选择一条等值线");
-            state.pathSelectedEvent(function() {
-                state.removePathSelectedEvent();
-                that.nextStep();
-            });
+            $("#messageBox").text("双击等值线上某个区域可以平滑整条曲线， 或者单击一个区域后手动选择部分点进行平滑");
+            pathDblClicked = function(path) {
+              that.smoothPath(path);
+            }
         }
 
         var step2 = function() {
@@ -53,7 +57,17 @@
     }
 
     SmoothProcess.prototype = new Process();
+    SmoothProcess.prototype.smoothPath = function(path) {
+      var pathStr = $(path).attr("d");
+      var pathArray = pathStr.split(" ");
 
+      var points = Snap.parsePathString(pathStr);
+      points = smoothDots(points);
+
+      pathStr = Snap.parsePathSegments(points);
+
+      $(path).attr("d", pathStr);
+    }
 
     var highLightDotsInPath = function(path) {
         var $path = Snap(path);
@@ -275,14 +289,25 @@
 
         //binding events
         var svgRoot = Snap("#gcgmap");
-        svgRoot.node.onclick = function(event) {
+        svgRoot.click(function(event) {
             var t = $(event.target);
             if (t.is("path")) {
                 state.selectPath(event.target);
             } else if (t.is("circle.dot")) {
                 //  updatePathDotStatus(event.target);
             }
-        }
+        });
+
+        svgRoot.dblclick(function(event) {
+          var t = $(event.target);
+          if (t.is("path")) {
+            if(pathDblClicked){
+              pathDblClicked(event.target);
+            }
+          } else if (t.is("circle.dot")) {
+              //  updatePathDotStatus(event.target);
+          }
+        });
 
         svgRoot.mousedown(function(event) {
             event.stopPropagation();
