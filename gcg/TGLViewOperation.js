@@ -1,66 +1,66 @@
-var TGLViewOperation = function() {
+var TGLViewOperation = function () {
 
 }
 
-TGLViewOperation.prototype ={
-   _TGLView:null,
-   _MouseState:null,
-   _PopupMenu: null,
-   _Mode2D:null,
-   _Temporary:null,
-   _Paint2NeedDown:null,
-   MouseDown:function(canvasObj, keys, position) {
+TGLViewOperation.prototype = {
+    _FGLView: null,
+    _MouseState: null,
+    _PopupMenu: null,
+    _Mode2D: null,
+    _Temporary: null,
+    _Paint2NeedDown: null,
+    MouseDown: function (canvasObj, keys, position) {
 
-   },
-   MouseMove:function(canvasObj, keys, position, downflag){
+    },
+    MouseMove: function (canvasObj, keys, position, downflag) {
 
-   },
-   MouseUp:function(canvasObj, keys, position){
+    },
+    MouseUp: function (canvasObj, keys, position) {
 
-   },
-   MouseBegin:function() {
+    },
+    MouseBegin: function () {
 
-   },
-   MouseEnd:function() {
+    },
+    MouseEnd: function () {
 
-   },
-   MouseOK:function(state) {
+    },
+    MouseOK: function (state) {
 
-   },
-   MouseCancel:function(state) {
+    },
+    MouseCancel: function (state) {
 
-   },
-   MouseUndo:function(state) {
+    },
+    MouseUndo: function (state) {
 
-   },
-   MouseInsert:function(state) {
+    },
+    MouseInsert: function (state) {
 
-   },
-   MouseDelete:function(state) {
+    },
+    MouseDelete: function (state) {
 
-   },
-   MouseCommand:function(command, state) {
+    },
+    MouseCommand: function (command, state) {
 
-   },
-   GetPopupMenu:function(menu) {
+    },
+    GetPopupMenu: function (menu) {
 
-   },
-   MouseCapture:function(position, nearsetPosition) {
+    },
+    MouseCapture: function (position, nearsetPosition) {
 
-   },
-   MouseCapature2D:function(glbase, position, nearsetPosition) {
+    },
+    MouseCapature2D: function (glbase, position, nearsetPosition) {
 
-   },
-   Paint:function(canvasObj) {
+    },
+    Paint: function (canvasObj) {
 
-   },
-   Paint2:function(canvasObj) {
+    },
+    Paint2: function (canvasObj) {
 
-   },
-   TGLViewOperation:function(glView) {
+    },
+    TGLViewOperation: function (glView) {
 
-   },
-   Invalidate:function() {
+    },
+    Invalidate: function () {
 
-   }
+    }
 }
