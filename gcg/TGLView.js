@@ -6,11 +6,11 @@ var TAutoViewType = {
     avRotate: 3
 };
 
-var TGLViewOperation = function() {
+var TGLView = function() {
 
 }
 
-TGLViewOperation.prototype = {
+TGLView.prototype = {
     _FGLDC: null,
     _FCursorOld: null,
     FCapturedPosition: null,
