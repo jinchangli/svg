@@ -1,76 +1,59 @@
-
-
-
-function TInterval2D(point1, point2) {
-
+TRect.prototype = {
+    left: null,
+    top: null,
+    right: null,
+    bottom: null
 }
 
-TInterval2D.prototype = {
-    Min: null, //TPosition2D  左下方坐标
-    Max: null, //TPosition2D  右上方坐标
-    add: function (v) {
-        this.Min = this.Min.add(v);
-        this.Max = this.Max.add(v);
-
-        return this;
-    },
-    minus: function () {
-
-    },
-    Center: function () {
-        this.Min.add(this.Max).divide(2);
-    },
-    Size: function () {
-        this.Max.minus(this.Min);
-    },
-    Scale: function () {
-
-    },
-    Rotate: function () {
-
-    },
-    equals: function (item) {
-        return this.Min.equals(item.Min) && this.Max.equals(item.Max);
-    },
-    lessOrEqalThan: function (item) {
-
+function TBound2D() {
+    if (this == window) {
+        var obj = new TBound2D();
+        obj.constructor.apply(bd, arguments);
+        return obj;
     }
 }
 
-function TBound2D(params) {
-
-}
-
 TBound2D.prototype = {
-    FInterval: null,
-    FValid: null,
-    Valid: function (params) {
-
+    Min: null, //TPosition2D  左下方坐标
+    Max: null, //TPosition2D  右上方坐标
+    Valid: null,
+    constructor: function () {//构造函数
+        this.Min = TPosition2D();
+        this.Max = TPosition2D();
+        this.Valid = false;
     },
-    Min: function (params) {
-
+    center: function () {
+        return new TVector2D((this.Min.X + this.Max.X) * 0.5, (this.Min.Y + this.Max.Y) * 0.5);
     },
-    Max: function (params) {
-
+    size: function () {
+        return new TVector2D((this.Max.X - this.Min.X), (this.Max.Y - this.Min.Y));
     },
-    Clear: function (params) {
-
+    Clear: function () {
+        this.Valid = false;
     },
-    SetBound: function (params) {
-
+    SetBound: function(p) {
+        if (this.Min.X > p.X)
+            this.Min.X = p.X;
+        if (this.Min.Y > p.Y)
+            this.Min.Y = p.Y;
+        if (this.Max.X < p.X)
+            this.Max.X = p.X;
+        if (this.Max.Y < p.Y)
+            this.Max.Y = p.Y;
+        this.Valid = true;
     },
-    SetBounds: function (params) {
-
-    }, Center: function (params) {
-
-    }, Size: function (params) {
-
-    }, Scale: function (params) {
-
-    }, Rotate: function (params) {
-
+    Move: function (v) {
+        this.Min.Add(v);
+        this.Max.Add(v);
     },
-    GetCorners: function (params) {
-
+    Scale: function (d) {
+        this.Min.Mul(d);
+        this.Max.Mul(d);
     },
+    get_corners: function (corners) {
+        corners[0].X = this.Min.X; corners[0].Y = this.Min.Y;
+        corners[1].X = this.Max.X; corners[1].Y = this.Min.Y;
+        corners[2].X = this.Max.X; corners[2].Y = this.Max.Y;
+        corners[3].X = this.Min.X; corners[3].Y = this.Max.Y;
+    }
 }
