@@ -1,4 +1,4 @@
-function TVector2D() {
+ï»¿function TVector2D() {
     if (this == window) {
         var obj = new TVector2D();
         obj.constructor.apply(obj, arguments);
@@ -16,7 +16,7 @@ function TPosition2D() {
 TPosition2D.prototype = TVector2D.prototype = {
     X: null,
     Y: null,
-    constructor: function () {//¹¹Ôìº¯Êı
+    constructor: function () {//æ„é€ å‡½æ•°
         if (arguments.length == 0) {
             this.X = this.Y = 0;
         } else if (arguments.length == 1) {
@@ -41,10 +41,10 @@ TPosition2D.prototype = TVector2D.prototype = {
         this.Y -= v.Y;
     },
     Mul: function (v) {// *=
-        if (typeof (v) == "number") {// Êı³Ë
+        if (typeof (v) == "number") {// æ•°ä¹˜
             this.X *= v;
             this.Y *= v;
-        } else {// ¸´Êı³Ë·¨
+        } else {// å¤æ•°ä¹˜æ³•
             var x = (this.X);
             this.X = x * v.X - this.Y * v.Y;
             this.Y = x * v.Y + this.Y * v.X;
@@ -57,7 +57,7 @@ TPosition2D.prototype = TVector2D.prototype = {
             }
             this.X /= v;
             this.Y /= v;
-        } else {// ¸´Êı³ı·¨
+        } else {// å¤æ•°é™¤æ³•
             if (Abs(v.X) >= Abs(v.Y)) {
                 var r = v.Y / v.X,
                     d = v.X * (1 + r * r),
@@ -74,17 +74,17 @@ TPosition2D.prototype = TVector2D.prototype = {
             }
         }
     },
-    LPerp: function () {// ×ó×ª90¡ã
+    LPerp: function () {// å·¦è½¬90Â°
         var x = (this.X);
         this.X = -this.Y;
         this.Y = x;
     },
-    RPerp: function () {// ÓÒ×ª90¡ã
+    RPerp: function () {// å³è½¬90Â°
         var x = (this.X);
         this.X = this.Y;
         this.Y = -x;
     },
-    Conj: function () {// ¹²éî
+    Conj: function () {// å…±è½­
         this.Y = -this.Y;
     },
     add: function (v) { // +
@@ -94,19 +94,19 @@ TPosition2D.prototype = TVector2D.prototype = {
         return new TVector2D(this.X - v.X, this.Y - v.Y);
     },
     mul: function (v) { // *
-        if (typeof (v) == "number") {// Êı³Ë
+        if (typeof (v) == "number") {// æ•°ä¹˜
             return new TVector2D(this.X * v, this.Y * v);
-        } else {// ¸´Êı³Ë·¨
+        } else {// å¤æ•°ä¹˜æ³•
             return new TVector2D(this.X * v.X - this.Y * v.Y, this.X * v.Y + this.Y * v.X);
         }
     },
     div: function (v) {
-        if (typeof (v) == "number") {// Êı³ı
+        if (typeof (v) == "number") {// æ•°é™¤
             if (v == 0) {
                 console.log("divide 0 error");
             }
             return new TVector2D(this.X / v, this.Y / v);
-        } else {//¸´Êı³ı·¨
+        } else {//å¤æ•°é™¤æ³•
             if (Abs(v.X) >= Abs(v.Y)) {
                 var r = v.Y / v.X,
                     d = v.X * (1 + r * r);
@@ -119,48 +119,48 @@ TPosition2D.prototype = TVector2D.prototype = {
             }
         }
     },
-    is_zero: function () {// ÅĞ¶Ï£ºÎª0£¿
+    is_zero: function () {// åˆ¤æ–­ï¼šä¸º0ï¼Ÿ
         return this.X == 0.0 && this.Y == 0.0;
     },
-    is_eql: function (v) {// ÅĞ¶Ï£ºÏàµÈ£¿
+    is_eql: function (v) {// åˆ¤æ–­ï¼šç›¸ç­‰ï¼Ÿ
         return this.X == v.X && this.Y == v.Y;
     },
-    dot: function (v) {// µã»ı
+    dot: function (v) {// ç‚¹ç§¯
         return this.X * v.X + this.Y * v.Y;
     },
-    crs: function (v) {// ²æ»ı
+    crs: function (v) {// å‰ç§¯
         return this.X * v.Y - this.Y * v.X;
     },
-    abs: function () {//³¤¶È
+    abs: function () {//é•¿åº¦
         return Math.sqrt(this.X * this.X + this.Y * this.Y);
     },
-    abs2: function () {//³¤¶ÈÆ½·½
+    abs2: function () {//é•¿åº¦å¹³æ–¹
         return (this.X * this.X + this.Y * this.Y);
     },
-    dir: function () {//·½Ïò[-Pi,Pi)
+    dir: function () {//æ–¹å‘[-Pi,Pi)
         return Math.atan2(this.Y, this.X);
     },
-    arg: function () {//·ø½Ç[0,2Pi)
+    arg: function () {//è¾è§’[0,2Pi)
         var rst = Math.atan2(this.Y, this.X);
         return rst < 0 ? rst + Math.PI * 2 : rst;
     },
-    neg: function () {//·´Ïò
+    neg: function () {//åå‘
         return new TVector2D(-this.X, -this.Y);
     },
-    sgn: function () {//µ¥Î»ÏòÁ¿
+    sgn: function () {//å•ä½å‘é‡
         var len = this.Abs();
         if (len > 0) {
             return new TVector2D(this).Div(len);
         }
         return new TVector2D(this);
     },
-    lperp: function () {// ×ó×ª90¡ã
+    lperp: function () {// å·¦è½¬90Â°
         return new TVector2D(-this.Y, this.X);
     },
-    rperp: function () {// ÓÒ×ª90¡ã
+    rperp: function () {// å³è½¬90Â°
         return new TVector2D(this.Y, -this.X);
     },
-    conj: function () {// ¹²éî
+    conj: function () {// å…±è½­
         return new TVector2D(this.X, -this.Y);
     }
 }

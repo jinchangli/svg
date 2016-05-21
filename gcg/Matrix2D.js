@@ -1,4 +1,4 @@
-function TMatrix2D() {
+ï»¿function TMatrix2D() {
     if (this == window) {
         var obj = new TMatrix2D();
         obj.constructor.apply(obj, arguments);
@@ -13,7 +13,7 @@ TMatrix2D.prototype = {
     A10: null,
     A11: null,
     A12: null,
-    constructor: function () {//¹¹Ôìº¯Êý
+    constructor: function () {//æž„é€ å‡½æ•°
         if (arguments.length == 0) {
             this.A00 = this.A11 = 1;
             this.A01 = this.A10 = 0;

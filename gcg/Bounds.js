@@ -1,4 +1,4 @@
-TRect.prototype = {
+﻿TRect.prototype = {
     left: null,
     top: null,
     right: null,

@@ -1,4 +1,4 @@
-function TGLView() {
+﻿function TGLView() {
     if (this == window) {
         var obj = new TGLView();
         obj.constructor.apply(obj, arguments);
@@ -22,7 +22,6 @@ TGLView.prototype = {
     FSmoothRender: null,
     FNeedDeleteGL: null,
     FValidFlag: null,
-    FNeedDraw: null,
     FViewChanged: null,
     FNeedDraw: null,
     AllowCapture: null,
@@ -68,11 +67,14 @@ TGLView.prototype = {
     //事件
     OnInitializeView: null, //OnInitializeView
     OnMousePosition: null, //OnMousePosition(position)
-    OnViewMoved: null, //OnViewMoved()
-    OnViewZoomed: null, //OnViewZoomed()
+    OnViewMoved: function () {
+        this.Invalidate();
+    },
+    OnViewZoomed: function () {
+        this.Invalidate();
+    },
     OnGLPaint: null, //OnGLPaint(glbase)
     OnRedrawView: null, //OnRedrawView(redraw_all)
-    OnInitializeView: null, //OnInitializeView()
 
     MouseOperation: function (operation) {
         if (arguments.length >= 1) {
@@ -638,12 +640,6 @@ TGLView.prototype = {
                     break;
             }
         }
-    },
-    OnViewMoved: function () {
-        this.Invalidate();
-    },
-    OnViewZoomed: function () {
-        this.Invalidate();
     },
 
     GLBase: function (glbase) {

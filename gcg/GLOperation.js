@@ -1,4 +1,4 @@
-function TGLOperation() {
+ï»¿function TGLOperation() {
     if (this == window) {
         var obj = new TGLOperation();
         obj.constructor.apply(obj, arguments);
@@ -13,7 +13,7 @@ TGLOperation.prototype = {
     Temporary: null,
     Paint2NeedDown: null,
     
-    // ¹¹Ôìº¯Êý
+    // æž„é€ å‡½æ•°
     constructor: function (glView) {
         this.FGLView = glview;
         this.MouseState = 0;
@@ -21,7 +21,7 @@ TGLOperation.prototype = {
         //PopupMenu(0)
     },
 
-    // ÊÂ¼þ
+    // äº‹ä»¶
     OnMouseDown: null, //OnMouseDown(canvasObj, keys, position)
     OnMouseMove: null, //OnMouseMove(canvasObj, keys, position, downflag)
     OnMouseUp: null, //OnMouseUp(canvasObj, keys, position)
