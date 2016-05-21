@@ -9,50 +9,50 @@ $(function() {
         var ctx = this.Canvas;
 
         ctx.clearRect(0, 0, $("#canvas").width(), $("#canvas").height());
-//    view.FGLBase.BeginView();
-//         ctx.fillStyle = "#eee";
-//         ctx.fillRect(0,0,800,500);
-//
-// //
-//       // var text = ctx.measureText("Hello");
-//
-//               ctx.globalCompositeOperation  = "destination-out";
-//               ctx.fillStyle = "green";
-//               ctx.fillRect(50, 40, 146, 48);
-//
-//               ctx.globalCompositeOperation  = "source-over";
-//               ctx.fillStyle = "red";
-//               ctx.font = "48px serif";
-//               ctx.textBaseline = "top";
-//               ctx.fillText("Hello", 50, 40);
-//
-//
-//                       ctx.beginPath();
-//                       ctx.moveTo(0,60);
-//                       ctx.lineTo(400, 60);
-//                       ctx.stroke();
-//
-//
+        view.FGLBase.BeginView();
+        //         ctx.fillStyle = "#eee";
+        //         ctx.fillRect(0,0,800,500);
+        //
+        // //
+        //       // var text = ctx.measureText("Hello");
+        //
+        //               ctx.globalCompositeOperation  = "destination-out";
+        //               ctx.fillStyle = "green";
+        //               ctx.fillRect(50, 40, 146, 48);
+        //
+        //               ctx.globalCompositeOperation  = "source-over";
+        //               ctx.fillStyle = "red";
+        //               ctx.font = "48px serif";
+        //               ctx.textBaseline = "top";
+        //               ctx.fillText("Hello", 50, 40);
+        //
+        //
+        //                       ctx.beginPath();
+        //                       ctx.moveTo(0,60);
+        //                       ctx.lineTo(400, 60);
+        //                       ctx.stroke();
+        //
+        //
 
-// //source-over
-//
-//         ctx.globalCompositeOperation = "xor";
-//
-//         ctx.rect(10,10,10,10);
-//
-//         ctx.fill();
-//
-//         ctx.rect(10,10,20,20);
-//         ctx.fill();
-//
-//
-//         ctx.rect(10,10,10,10);
-//
-//         ctx.fill();
-//
-//         ctx.rect(10,10,20,20);
-//         ctx.fill();
-//
+        // //source-over
+        //
+        //         ctx.globalCompositeOperation = "xor";
+        //
+        //         ctx.rect(10,10,10,10);
+        //
+        //         ctx.fill();
+        //
+        //         ctx.rect(10,10,20,20);
+        //         ctx.fill();
+        //
+        //
+        //         ctx.rect(10,10,10,10);
+        //
+        //         ctx.fill();
+        //
+        //         ctx.rect(10,10,20,20);
+        //         ctx.fill();
+        //
 
 
 
@@ -79,20 +79,20 @@ $(function() {
     }
 
     operationForDot.OnMouseEnd = function() {
-       console.log("mouse end");
+        console.log("mouse end");
     }
 
     operationForDot.OnMouseMove = function(keys, position, downflag) {
-      //  console.log("mouse move with " + downflag);
+        //  console.log("mouse move with " + downflag);
     }
 
     operationForDot.OnMouseCapture = function(position) {
-       var min = 10000000000;
-       var nearsetPosition;
+        var min = 10000000000;
+        var nearsetPosition;
 
         $.each(this.FGLView.Points, function(index, ele) {
             var distance = ele.sub(position).abs();
-            if(distance<=3 && distance<min){
+            if (distance <= 3 && distance < min) {
                 min = distance;
                 nearsetPosition = ele;
             }
@@ -138,6 +138,17 @@ $(function() {
         var y = event.offsetY;
         var x = event.offsetX;
         view.WMMouseMove(event, x, y);
+    });
+
+    $(".save").click(function() {
+        var pngUrl = $("#canvas")[0].toDataURL('image/png');
+        if ($(".download").length > 0) {
+
+        } else {
+            $("<a class='download' download='gcg.png'>下载</a>").insertAfter($(this));
+        }
+
+        $(".download").attr("href", pngUrl);
     });
 });
 
