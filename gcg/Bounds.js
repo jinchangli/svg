@@ -1,4 +1,8 @@
-﻿TRect.prototype = {
+var TRect = function() {
+
+}
+
+TRect.prototype = {
     left: null,
     top: null,
     right: null,
@@ -8,7 +12,7 @@
 function TBound2D() {
     if (this == window) {
         var obj = new TBound2D();
-        obj.constructor.apply(bd, arguments);
+        obj.constructor.apply(obj, arguments);
         return obj;
     }
 }

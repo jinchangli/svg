@@ -1,10 +1,8 @@
-﻿function TGLView() {
-    if (this == window) {
-        var obj = new TGLView();
-        obj.constructor.apply(obj, arguments);
-        return v;
-    }
+﻿
+function TGLView() {
+    this.constructor.apply(this, arguments);
 }
+
 TGLView.prototype = {
     Canvas: null,
     FGLBase: null,
@@ -34,49 +32,57 @@ TGLView.prototype = {
     MouseMoveModelPosition: null,
     MinMove: null,
 
-    constructor: function (canvas) {
-        Canvas = canvas;
-        FGLBase = TGLBase();
-        MouseDownPosition = TPosition2D();
-        MouseDownMapPosition = TPosition2D();
-        MouseDownModelPosition = TPosition2D();
-        MouseMovePosition = TPosition2D();
-        MouseMoveMapPosition = TPosition2D();
-        MouseMoveModelPosition = TPosition2D();
-        FCapturedPosition = TPosition2D();
-        MinMove = 3;
+    Points: null,
 
-        FMouseLeftButtonDown = false;
-        FMouseMiddleButtonDown = false;
-        FMouseRightButtonDown = false;
-        FDoubleClicked = false;
-        FTemporaryFlag = false;
-        FCapturedFlag = false;
-        FEnableCapture = false;
-        FSmoothRender = false;
-        FNeedDeleteGL = false;
-        FValidFlag = false;
-        FNeedDraw = false;
-        FViewChanged = false;
-        AllowCapture = false;
+    constructor: function(canvas) {
+        with(this) {
+            Canvas = canvas;
+            FGLBase = TGLBase(canvas);
+            MouseDownPosition = TPosition2D();
+            MouseDownMapPosition = TPosition2D();
+            MouseDownModelPosition = TPosition2D();
+            MouseMovePosition = TPosition2D();
+            MouseMoveMapPosition = TPosition2D();
+            MouseMoveModelPosition = TPosition2D();
+            FCapturedPosition = TPosition2D();
+            MinMove = 3;
+
+            FMouseLeftButtonDown = false;
+            FMouseMiddleButtonDown = false;
+            FMouseRightButtonDown = false;
+            FDoubleClicked = false;
+            FTemporaryFlag = false;
+            FCapturedFlag = false;
+            FEnableCapture = true;
+            FSmoothRender = false;
+            FNeedDeleteGL = false;
+            FValidFlag = false;
+            FNeedDraw = false;
+            FViewChanged = false;
+            AllowCapture = false;
+
+            Points = [];
+        }
     },
-    destruction: function (params) {
+    destruction: function(params) {
         this.FGLBase = null;
     },
 
     //事件
     OnInitializeView: null, //OnInitializeView
     OnMousePosition: null, //OnMousePosition(position)
-    OnViewMoved: function () {
+    OnViewMoved: function() {
         this.Invalidate();
     },
-    OnViewZoomed: function () {
+    OnViewZoomed: function() {
         this.Invalidate();
     },
-    OnGLPaint: null, //OnGLPaint(glbase)
+    OnPaint: function() {
+
+    }, //OnGLPaint(glbase)
     OnRedrawView: null, //OnRedrawView(redraw_all)
 
-    MouseOperation: function (operation) {
+    MouseOperation: function(operation) {
         if (arguments.length >= 1) {
             if (operation != this.FMouseOperation) {
                 if (operation) {
@@ -85,27 +91,25 @@ TGLView.prototype = {
                             this.EndTemporaryOperation();
                             this.BeginTemporaryOperation();
                             this.FMouseOperation = operation;
-                            this.SetCursor(FMouseOperation.Cursor);
+                            //  //this.SetCursor(FMouseOperation.Cursor);
                             this.FMouseOperation.MouseBegin();
-                        }
-                        else {
+                        } else {
                             this.FCapturedFlag = false;
                             if (this.FMouseOperation) {
                                 this.FMouseOperation.MouseEnd();
                             }
                             this.FMouseOperation = operation;
-                            this.SetCursor(FMouseOperation.Cursor);
+                            ////this.SetCursor(FMouseOperation.Cursor);
                             this.FMouseOperation.MouseBegin();
                         }
                     }
-                }
-                else {
+                } else {
                     this.FCapturedFlag = false;
                     if (this.FMouseOperation)
                         this.FMouseOperation.MouseEnd();
 
                     this.FMouseOperation = null;
-                    this.SetCursor(Cursor0);
+                    ////this.SetCursor(Cursor0);
                 }
             }
         } else {
@@ -113,7 +117,7 @@ TGLView.prototype = {
         }
     },
 
-    MinZoom: function (minzoom) {
+    MinZoom: function(minzoom) {
         if (arguments.length == 0) {
             return this.FGLBase ? this.FGLBase.MinZoom() : 1.00;
         } else if (this.FGLBase) {
@@ -121,7 +125,7 @@ TGLView.prototype = {
         }
 
     },
-    MaxZoom: function (maxzoom) {
+    MaxZoom: function(maxzoom) {
         if (arguments.length == 0) {
             return this.FGLBase ? this.FGLBase.MaxZoom() : 1.00;
         } else if (this.FGLBase) {
@@ -129,49 +133,49 @@ TGLView.prototype = {
         }
 
     },
-    MousePosition: function (position) {
+    MousePosition: function(position) {
         if (this.OnMousePosition)
             this.OnMousePosition(position);
     },
-    ViewMoved: function () {
+    ViewMoved: function() {
         if (this.OnViewMoved)
             this.OnViewMoved();
     },
-    ViewZoomed: function () {
+    ViewZoomed: function() {
         if (this.OnViewZoomed)
             this.OnViewZoomed();
     },
 
-    ViewToScreen: function (point2d) {
+    ViewToScreen: function(point2d) {
         if (this.FGLBase) {
             return this.FGLBase.ViewToScreen(point2d);
         } else {
             return this.Point2DToPoint(point2d);
         }
     },
-    ScreenToView: function (point) {
+    ScreenToView: function(point) {
         return this.FGLBase ? this.FGLBase.ScreenToView(point) : this.PointToPoint2D(point);
     },
 
-    CanEndTemporaryOperation: function () {
+    CanEndTemporaryOperation: function() {
         return this.FTemporaryFlag;
     },
-    EndTemporaryOperation: function () {
+    EndTemporaryOperation: function() {
         if (this.FTemporaryFlag) {
             if (this.FMouseOperation)
                 this.FMouseOperation.MouseEnd();
             this.FMouseOperation = this.FMouseOperation0;
-            this.SetCursor(this.FMouseOperation ? this.FMouseOperation.Cursor : 0);
+            //  //this.SetCursor(this.FMouseOperation ? this.FMouseOperation.Cursor : 0);
             this.FTemporaryFlag = false;
             this.FMouseOperation0 = null;
 
         }
     },
-    EndMouseOperation: function () {
+    EndMouseOperation: function() {
         this.MouseOperation(null);
     },
 
-    ZoomViewExtent: function () {
+    ZoomViewExtent: function() {
         if (this.FGLBase) {
             this.FGLBase.ZoomExtent();
             this.ViewChanged(true);
@@ -179,72 +183,72 @@ TGLView.prototype = {
         }
         this.ViewZoomed();
     },
-    ZoomViewIn: function () {
+    ZoomViewIn: function() {
         if (this.FGLBase && this.FGLBase.ZoomIn(TPosition2D())) {
             this.ViewChanged(true);
             this.Invalidate();
         }
     },
-    ZoomViewOut: function () {
+    ZoomViewOut: function() {
         if (this.FGLBase && this.FGLBase.ZoomOut(TPosition2D())) {
             this.ViewChanged(true);
             this.Invalidate();
         }
     },
 
-    MouseOK: function (state) {
+    MouseOK: function(state) {
         if (this.FMouseOperation)
             this.FMouseOperation.MouseOK(state);
     },
-    MouseCancel: function (state) {
+    MouseCancel: function(state) {
         if (this.FMouseOperation)
             this.FMouseOperation.MouseCancel(state);
     },
-    MouseUndo: function (state) {
+    MouseUndo: function(state) {
         if (this.FMouseOperation)
             this.FMouseOperation.MouseUndo(state);
     },
-    MouseInsert: function (state) {
+    MouseInsert: function(state) {
         if (this.FMouseOperation)
             this.FMouseOperation.MouseInsert(state);
     },
-    MouseDelete: function (state) {
+    MouseDelete: function(state) {
         if (this.FMouseOperation)
             this.FMouseOperation.MouseDelete(state);
     },
-    MouseCommand: function (command, state) {
+    MouseCommand: function(command, state) {
         if (this.FMouseOperation)
             this.FMouseOperation.MouseCommand(command, state);
     },
 
-    MoveViewMouseMove: function (dc, keys, position, downflag) {
+    MoveViewMouseMove: function(dc, keys, position, downflag) {
         if (downflag)
             this.ProcessMoveView(this.MouseMovePosition, position);
     },
-    ZoomInMouseUp: function (dc, keys, position) {
+    ZoomInMouseUp: function(dc, keys, position) {
         if (this.FGLBase && this.FGLBase.ZoomIn(center)) {
             this.ViewChanged(true);
             this.Invalidate();
         }
         this.ViewZoomed();
     },
-    ZoomOutMouseUp: function (dc, keys, position) {
+    ZoomOutMouseUp: function(dc, keys, position) {
         if (this.FGLBase && this.FGLBase.ZoomOut(position)) {
             this.ViewChanged(true);
             this.Invalidate();
         }
         this.ViewZoomed();
     },
-    ZoomRectMouseUp: function (dc, keys, position) {
+    ZoomRectMouseUp: function(dc, keys, position) {
         if (position.sub(this.MouseDownPosition).abs() >= 10)
             this.ZoomViewRect(this.TInterval2D(this.MouseDownPosition, position));
     },
-    ZoomViewMouseMove: function (dc, keys, position, downflag) {
+    ZoomViewMouseMove: function(dc, keys, position, downflag) {
         if (downflag)
             this.ProcessZoomView(this.MouseMovePosition, position);
     },
 
-    MouseOperation0: function (operation) {
+    MouseOperation0: function(operation) {
         if (operation != this.FMouseOperation) {
             if (operation) {
                 if (operation.FGLView == this) {
@@ -252,44 +256,42 @@ TGLView.prototype = {
                         this.EndTemporaryOperation();
                         this.BeginTemporaryOperation();
                         this.FMouseOperation = operation;
-                        this.SetCursor(this.FMouseOperation.Cursor);
-                    }
-                    else {
+                        ////this.SetCursor(this.FMouseOperation.Cursor);
+                    } else {
                         this.FCapturedFlag = false;
                         this.FMouseOperation = operation;
-                        this.SetCursor(this.FMouseOperation.Cursor);
+                        //  //this.SetCursor(this.FMouseOperation.Cursor);
                     }
                 }
-            }
-            else {
+            } else {
                 this.FCapturedFlag = false;
                 this.FMouseOperation = null;
-                this.SetCursor(Cursor0);
+                //  //this.SetCursor(Cursor0);
             }
         }
     },
-    EndTemporaryOperation0: function () {
+    EndTemporaryOperation0: function() {
         if (this.FTemporaryFlag) {
             this.FMouseOperation = this.FMouseOperation0;
-            this.SetCursor(this.FMouseOperation ? this.FMouseOperation.Cursor : 0);
+            ////this.SetCursor(this.FMouseOperation ? this.FMouseOperation.Cursor : 0);
             this.FTemporaryFlag = false;
             this.FMouseOperation0 = null;
         }
     },
-    EndMouseOperation0: function () {
+    EndMouseOperation0: function() {
         MouseOperation0(null);
     },
 
-    Paint: function (dc) {
+    Paint: function(dc) {
         if (this.OnPaint)
             this.OnPaint(dc);
     },
 
-    Paint2: function (dc) {
+    Paint2: function(dc) {
         if (this.OnPaint2)
             this.OnPaint2(dc);
     },
-    ProcessMoveView: function (from, to, flag) {
+    ProcessMoveView: function(from, to, flag) {
         if (arguments.length <= 2) {
             flag = false;
         }
@@ -297,164 +299,141 @@ TGLView.prototype = {
             this.MoveView(flag ? from.add(to).mul(0.5) : from, to); // TBD: TPosition2D, add, divide
     },
 
-    BeginTemporaryOperation: function () {
+    BeginTemporaryOperation: function() {
         this.FCapturedFlag = false;
         if (!this.FTemporaryFlag) {
             this.FMouseOperation0 = this.FMouseOperation;
             this.FTemporaryFlag = true;
         }
         this.FMouseOperation = null;
-        this.SetCursor(0);
+        ////this.SetCursor(0);
     },
 
-    ProcessZoomView: function (from, to) {
+    ProcessZoomView: function(from, to) {
         var d = to.Y - from.Y;
         if (d !== 0)
             this.ZoomView(Exp(d / (flag ? 200 : 100)));
     },
 
-    GenCapturePosition: function (dc, keys, x, y) {
+    GenCapturePosition: function(keys, x, y) {
         if (this.FCapturedFlag)
-            this.DrawCapturedPoint(dc);
-        var point = Point(x, y);
+          {
+             this.DrawCapturedPoint();
+          }
+
+        var point = {
+            x: x,
+            y: y
+        };
         var mouse_position = this.ScreenToView(point);
+
         if (this.AllowCapture && this.FEnableCapture && this.FMouseOperation) {
             this.FCapturedFlag = false;
-            var captureed_position;
-            if (this.FMouseOperation.MouseCapture2D(this.FGLBase, mouse_position, captured_position) ? true : this.FMouseOperation.MouseCapture(mouse_position, captured_position)) {
-                this.FCapturedPosition = mouse_position = captureed_position;
+            var captured_position = this.FMouseOperation.MouseCapture2D(this.FGLBase, mouse_position);
+
+            if(!captured_position){
+              captured_position = this.FMouseOperation.MouseCapture(mouse_position);
+            }
+
+            if (captured_position) {
+                this.FCapturedPosition = mouse_position = captured_position;
                 this.FCapturedFlag = true;
             }
         }
         if (this.FCapturedFlag)
-            this.DrawCapturedPoint(dc);
+            this.DrawCapturedPoint();
         return mouse_position;
     },
-    DrawCapturedPoint: function (dc) {
-        var p = this.ViewToScreen(FCapturedPosition);
-        var rop2 = this.SetROP2(dc, R2_XORPEN);
-        var pen = this.SelectObject(dc, CreatePen(PS_SOLID, 0, 0x00FF0000)); //TBD HPEN
-        var d = 8;
-        MoveToEx(dc, p.x - d, p.y - d, 0);
-        LineTo(dc, p.x + d, p.y - d);
-        LineTo(dc, p.x + d, p.y + d);
-        LineTo(dc, p.x - d, p.y + d);
-        LineTo(dc, p.x - d, p.y - d);
-        d = 6;
-        MoveToEx(dc, p.x - d, p.y - d, 0);
-        LineTo(dc, p.x + d, p.y - d);
-        LineTo(dc, p.x + d, p.y + d);
-        LineTo(dc, p.x - d, p.y + d);
-        LineTo(dc, p.x - d, p.y - d);
-        d = 4;
-        MoveToEx(dc, p.x - d, p.y - d, 0);
-        LineTo(dc, p.x + d, p.y - d);
-        LineTo(dc, p.x + d, p.y + d);
-        LineTo(dc, p.x - d, p.y + d);
-        LineTo(dc, p.x - d, p.y - d);
-        this.DeleteObject(this.SelectObject(dc, pen));
-        pen = this.SelectObject(dc, CreatePen(PS_SOLID, 0, 0x0000FFFF));
-        d = 7;
-        MoveToEx(dc, p.x - d, p.y - d, 0);
-        LineTo(dc, p.x + d, p.y - d);
-        LineTo(dc, p.x + d, p.y + d);
-        LineTo(dc, p.x - d, p.y + d);
-        LineTo(dc, p.x - d, p.y - d);
-        d = 5;
-        MoveToEx(dc, p.x - d, p.y - d, 0);
-        LineTo(dc, p.x + d, p.y - d);
-        LineTo(dc, p.x + d, p.y + d);
-        LineTo(dc, p.x - d, p.y + d);
-        LineTo(dc, p.x - d, p.y - d);
-        d = 3;
-        MoveToEx(dc, p.x - d, p.y - d, 0);
-        LineTo(dc, p.x + d, p.y - d);
-        LineTo(dc, p.x + d, p.y + d);
-        LineTo(dc, p.x - d, p.y + d);
-        LineTo(dc, p.x - d, p.y - d);
-        this.SetROP2(dc, rop2);
-        this.DeleteObject(SelectObject(dc, pen));
+    DrawCapturedPoint: function() {
+        var p = { x: this.FCapturedPosition.X, y: this.FCapturedPosition.Y};
+        //var rop2 = this.SetROP2(dc, R2_XORPEN);
+        var ctx = this.Canvas;
+        ctx.save();
+        this.Canvas.globalCompositeOperation = "xor";
+        //var pen = this.SelectObject(dc, CreatePen(PS_SOLID, 0, 0x00FF0000)); //TBD HPEN
+        ctx.beginPath();
+        ctx.rect(p.x - 2, p.y -2, 5, 5);
+        ctx.fill();
+        //ctx.closePath();
+        ctx.rect(p.x-4, p.y-4, 9, 9);
+        ctx.fill();
+
+        ctx.restore();
+        //this.DeleteObject(SelectObject(pen));
     },
 
-    ProcessMouseDown0: function (dc, button, keys, position) {
-        var flag_left, flag_middle, flag_right, flag_shift, flag_ctrl, flag_alt;
-        this.GetMouseKeys(keys, flag_left, flag_middle, flag_right, flag_shift, flag_ctrl, flag_alt);
+    ProcessMouseDown0: function(event, position) {
+        var flags = GetMouseKeys(event);
         if (!this.FMouseLeftButtonDown && !this.FMouseMiddleButtonDown && !this.FMouseRightButtonDown) {
-            this.SetCapture(Handle);
+            //  this.SetCapture(Handle);
             this.MouseDownPosition = position;
             this.MouseDownMapPosition = this.ViewToMap(this.MouseDownPosition);
             this.MouseDownModelPosition = this.MapToModel(this.MouseDownMapPosition);
             this.MouseMovePosition = this.MouseDownPosition;
             this.MouseMoveMapPosition = this.ViewToMap(this.MouseMovePosition);
             this.MouseMoveModelPosition = this.MapToModel(this.MouseMoveMapPosition);
-            if (button == mbRight) {
+            if (flags.right) {
                 this.FCursorOld = this.GetCursor();
                 this.FMouseRightButtonDown = true;
                 this.FEnableCapture = false;
-                if (!flag_left && !flag_middle) {
-                    var flag = (flag_shift ? 1 : 0) + (flag_ctrl ? 2 : 0) + (flag_alt ? 4 : 0);
-                    if (flag == 0)
-                        this.SetCursor(Cursor_MoveView);
-                    else if (flag == 1)
-                        this.SetCursor(Cursor_ZoomView);
-                    else if (flag == 2)
-                        this.SetCursor(Cursor_Rotate);
-                }
-                else if (flag_left)
-                    this.SetCursor(Cursor_ZoomView);
-                else if (flag_middle)
-                    this.SetCursor(Cursor_MoveView);
-                else
-                    this.SetCursor(Cursor_Rotate);
-            }
-            else if (button == mbMiddle) {
+                // if (!flags.left && !flags.middle) {
+                //     var flag = (flags.shift ? 1 : 0) + (flags.ctrl ? 2 : 0) + (flags.alt ? 4 : 0);
+                //     if (flag == 0)
+                //         //this.SetCursor(Cursor_MoveView);
+                //     else if (flag == 1)
+                //         //this.SetCursor(Cursor_ZoomView);
+                //     else if (flag == 2)
+                //         //this.SetCursor(Cursor_Rotate);
+                // }
+                // else if (flags.left)
+                //     //this.SetCursor(Cursor_ZoomView);
+                // else if (flags.middle)
+                //     //this.SetCursor(Cursor_MoveView);
+                // else
+                //     //this.SetCursor(Cursor_Rotate);
+            } else if (flags.middle) {
                 this.FCursorOld = this.GetCursor();
                 this.FMouseMiddleButtonDown = true;
                 this.FEnableCapture = false;
-                this.SetCursor(Cursor_Rotate);
-            }
-            else {
-                if (flag_middle && flag_right)
-                    this.SetCursor(Cursor_Rotate);
-                else if (flag_right)
-                    this.SetCursor(Cursor_ZoomView);
-                else
-                    return true;
+                //this.SetCursor(Cursor_Rotate);
+            } else {
+                // if (flags.middle && flags.right)
+                //     //this.SetCursor(Cursor_Rotate);
+                // else if (flags.right)
+                //     //this.SetCursor(Cursor_ZoomView);
+                // else
+                return true;
             }
         }
         return false;
 
     },
-    ProcessMouseMove0: function (dc, keys, position) {
-        var flag_left, flag_middle, flag_right, flag_shift, flag_ctrl, flag_alt;
-        this.GetMouseKeys(keys, flag_left, flag_middle, flag_right, flag_shift, flag_ctrl, flag_alt);
+    ProcessMouseMove0: function(event, position) {
+        var flags = GetMouseKeys(event);
         if (this.FMouseRightButtonDown) {
-            if (!flag_left && !flag_middle) {
-                var flag = (flag_shift ? 1 : 0) + (flag_ctrl ? 2 : 0) + (flag_alt ? 4 : 0);
+            if (!flags.left && !flags.middle) {
+                var flag = (flags.shift ? 1 : 0) + (flags.ctrl ? 2 : 0) + (flags.alt ? 4 : 0);
                 if (flag == 0) {
-                    this.SetCursor(Cursor_MoveView);
-                    this.MoveViewMouseMove(dc, keys, position, true);
+                    //this.SetCursor(Cursor_MoveView);
+                    this.MoveViewMouseMove(keys, position, true);
                 } else if (flag == 1) {
-                    this.SetCursor(Cursor_ZoomView);
-                    this.ZoomViewMouseMove(dc, keys, position, true);
+                    //this.SetCursor(Cursor_ZoomView);
+                    this.ZoomViewMouseMove(keys, position, true);
                 }
-            } else if (flag_left) {
-                this.SetCursor(Cursor_ZoomView);
-                this.ZoomViewMouseMove(dc, keys, position, true);
-            } else if (flag_middle) {
-                this.SetCursor(Cursor_MoveView);
-                this.MoveViewMouseMove(dc, keys, position, true);
+            } else if (flags.left) {
+                //this.SetCursor(Cursor_ZoomView);
+                this.ZoomViewMouseMove(keys, position, true);
+            } else if (flags.middle) {
+                //this.SetCursor(Cursor_MoveView);
+                this.MoveViewMouseMove(keys, position, true);
             }
-        }
-        else if (this.FMouseLeftButtonDown) {
-            if (flag_right) {
-                this.SetCursor(Cursor_ZoomView);
-                this.ZoomViewMouseMove(dc, keys, position, true);
-            }
-            else
+        } else if (this.FMouseLeftButtonDown) {
+            if (flags.right) {
+                //this.SetCursor(Cursor_ZoomView);
+                this.ZoomViewMouseMove(keys, position, true);
+            } else
                 return true;
-        }
-        else
+        } else
             return true;
         this.MouseMovePosition = position;
         this.MouseMoveMapPosition = ViewToMap(MouseMovePosition);
@@ -462,16 +441,17 @@ TGLView.prototype = {
         return false;
 
     },
-    ProcessMouseUp0: function (dc, button, keys, position) {
-        if ((this.FMouseLeftButtonDown && button == mbLeft ? 1 : 0) + (this.FMouseMiddleButtonDown && button == mbMiddle ? 1 : 0) + (this.FMouseRightButtonDown && button == mbRight ? 1 : 0) == 1) {
+    ProcessMouseUp0: function(keys, position) {
+        var flags = GetMouseKeys(keys);
+        if ((this.FMouseLeftButtonDown && flags.left ? 1 : 0) + (this.FMouseMiddleButtonDown && flags.middle ? 1 : 0) + (this.FMouseRightButtonDown && flags.right ? 1 : 0) == 1) {
             if (this.FMouseMiddleButtonDown) {
                 if (this.FMouseOperation && position.sub(MouseDownPosition).abs() >= 1)
                     this.ViewRotated();
-                this.SetCursor(FCursorOld);
+                ////this.SetCursor(FCursorOld);
                 this.FMouseMiddleButtonDown = false;
                 this.FEnableCapture = true;
-            }
-            else if (this.FMouseRightButtonDown) {
+
+            } else if (this.FMouseRightButtonDown) {
                 if (position.sub(this.MouseDownPosition).abs() < 3) {
                     // if (HMENU popup_menu = FMouseOperation?FMouseOperation.GetPopupMenu(FMouseOperation.PopupMenu):PopupMenu)
                     // {
@@ -480,12 +460,13 @@ TGLView.prototype = {
                     //   TrackPopupMenu(popup_menu,TPM_LEFTALIGN,point.x,point.y,0,Handle,0);
                     // }
                     this.EndTemporaryOperation();
-                }
-                else
+                } else
                     this.ViewMoved();
-                this.SetCursor(this.FCursorOld);
+                //  //this.SetCursor(this.FCursorOld);
                 this.FMouseRightButtonDown = false;
                 this.FEnableCapture = true;
+
+
             } else {
                 this.FMouseLeftButtonDown = false;
                 return true;
@@ -495,15 +476,16 @@ TGLView.prototype = {
         return false;
     },
 
-    ProcessMouseDown: function (dc, button, keys, position) {
+    ProcessMouseDown: function( keys, position) {
         if (this.FMouseOperation)
-            this.FMouseOperation.MouseDown(dc, keys, position);
+            this.FMouseOperation.MouseDown(keys, position);
         this.FMouseLeftButtonDown = true;
     },
-    ProcessMouseMove: function (dc, keys, position) {
+    ProcessMouseMove: function(keys, position) {
         if (this.FMouseOperation) {
-            if (this.MouseMovePosition.sub(position).abs() >= MinMove)
-                this.FMouseOperation.MouseMove(dc, keys, position, this.FMouseLeftButtonDown);
+          var moveOffset = this.MouseMovePosition.sub(position).abs();
+            if (moveOffset >= this.MinMove)
+                this.FMouseOperation.MouseMove(keys, position, this.FMouseLeftButtonDown);
             else
                 return;
         }
@@ -511,21 +493,21 @@ TGLView.prototype = {
         this.MouseMoveMapPosition = this.ViewToMap(this.MouseMovePosition);
         this.MouseMoveModelPosition = this.MapToModel(this.MouseMoveMapPosition);
     },
-    ProcessMouseUp: function (dc, button, keys, position) {
-        this.ReleaseCapture();
+    ProcessMouseUp: function(keys, position) {
+        //this.ReleaseCapture();
         this.FMouseLeftButtonDown = false;
         if (this.FMouseOperation)
-            this.FMouseOperation.MouseUp(dc, keys, position);
+            this.FMouseOperation.MouseUp(keys, position);
     },
 
-    MoveView: function (from, to) {
+    MoveView: function(from, to) {
         if (this.FGLBase && this.FGLBase.Move(from, to)) {
             this.ViewChanged(true);
             this.Invalidate();
         }
         this.ViewMoved();
     },
-    ZoomView: function (position, scale) {
+    ZoomView: function(position, scale) {
         if (arguments.length == 1) {
             if (this.FGLBase && this.FGLBase.Zoom(this.TPosition2D(), scale)) {
                 this.ViewChanged(true);
@@ -540,69 +522,74 @@ TGLView.prototype = {
             this.ViewZoomed();
         }
     },
-    ZoomViewRect: function (rect) {
+    ZoomViewRect: function(rect) {
         if (this.FGLBase && this.FGLBase.ZoomRect(rect, FIdentityXY())) {
             this.ViewChanged(true);
             this.Invalidate();
         }
         this.ViewZoomed();
     },
-    InitializeView: function () {
+    InitializeView: function() {
         if (this.OnInitializeView)
             this.OnInitializeView();
     },
 
-    WMMouseDown: function (button, keys, x, y) {
-        this.SetAutoView(0, this.MouseMovePosition, this.MouseMovePosition);
-        if (!this.FDoubleClicked()) {
-            var point = { x: X, y: Y };
-            var dc = GetDC(Handle);
-            if (this.ProcessMouseDown0(dc, button, keys, this.ScreenToView(point))) {
-                this.ProcessMouseDown(dc, button, keys, this.GenCapturePosition(dc, keys, X, Y));
-                if (this.FMouseOperation && this.FMouseLeftButtonDown && this.FMouseOperation.Paint2NeedDown())
-                    this.FMouseOperation.Paint2(dc);
+    WMMouseDown: function(keys, x, y) {
+        if (!this.FDoubleClicked) {
+            var point = {
+                x: x,
+                y: y
+            };
+
+            if (this.ProcessMouseDown0(keys, this.ScreenToView(point))) {
+                this.ProcessMouseDown(keys, this.GenCapturePosition(keys, x, y));
+                if (this.FMouseOperation && this.FMouseLeftButtonDown && this.FMouseOperation.Paint2NeedDown)
+                    this.FMouseOperation.Paint2();
             }
-            this.ReleaseDC(Handle, dc);
-        }
-        else {
-            this.FDoubleClicked(false);
+        } else {
+            this.FDoubleClicked = false;
             return;
         }
     },
 
-    WMMouseMove: function (keys, x, y) {
-        var point = { x: X, y: Y };
-        var position = (ScreenToView(point));
-        var dc = GetDC(Handle);
-        if (this.ProcessMouseMove0(dc, keys, position)) {
-            if (this.FMouseOperation && (!this.FMouseOperation.Paint2NeedDown() || this.FMouseLeftButtonDown))
-                this.FMouseOperation.Paint2(dc);
-            this.Paint2(dc);
-            position = this.GenCapturePosition(dc, keys, X, Y);
-            this.ProcessMouseMove(dc, keys, position);
-            this.Paint2(dc);
-            if (this.FMouseOperation && (!this.FMouseOperation.Paint2NeedDown() || this.FMouseLeftButtonDown))
-                this.FMouseOperation.Paint2(dc);
+    WMMouseMove: function(keys, x, y) {
+        var point = {
+            x: x,
+            y: y
+        };
+        var position = (this.ScreenToView(point));
+      //  var dc = GetDC(Handle);
+        if (this.ProcessMouseMove0(keys, position)) {
+            if (this.FMouseOperation && (!this.FMouseOperation.Paint2NeedDown || this.FMouseLeftButtonDown))
+                this.FMouseOperation.Paint2();
+            this.Paint2();
+            position = this.GenCapturePosition(keys, x, y);
+            this.ProcessMouseMove(keys, position);
+            this.Paint2();
+            if (this.FMouseOperation && (!this.FMouseOperation.Paint2NeedDown || this.FMouseLeftButtonDown))
+                this.FMouseOperation.Paint2();
         }
+
         this.MousePosition(position);
-        this.ReleaseDC(Handle, dc);
     },
-    WMMouseUp: function (button, keys, x, y) {
-        var point = { x: X, y: Y };
-        var dc = GetDC(Handle);
-        if (this.ProcessMouseUp0(dc, button, keys, this.ScreenToView(point))) {
+    WMMouseUp: function(keys, x, y) {
+        var point = {
+            x: x,
+            y: y
+        };
+
+        if (this.ProcessMouseUp0(keys, this.ScreenToView(point))) {
             if (this.FMouseOperation && this.FMouseLeftButtonDown && this.FMouseOperation.Paint2NeedDown())
-                this.FMouseOperation.Paint2(dc);
-            this.ProcessMouseUp(dc, button, keys, this.GenCapturePosition(dc, keys, X, Y));
+                this.FMouseOperation.Paint2();
+            this.ProcessMouseUp(keys, this.GenCapturePosition(keys, x, y));
         }
-        this.ReleaseDC(Handle, dc);
-        this.FDoubleClicked(false);
+        //  this.ReleaseDC(Handle, dc);
+        this.FDoubleClicked = false;
     },
-    WMMouseWheel: function (keys, wheeldelta, x, y) {
+    WMMouseWheel: function(event, wheeldelta, x, y) {
         if (this.FGLBase) {
-            var flag_left, flag_middle, flag_right, flag_shift, flag_ctrl, flag_alt;
-            this.GetMouseKeys(keys, flag_left, flag_middle, flag_right, flag_shift, flag_ctrl, flag_alt);
-            var op = (flag_shift ? 1 : 0) + (flag_alt ? -1 : 0);
+            var flags = GetMouseKeys(event);
+            var op = (flags.shift ? 1 : 0) + (flags.alt ? -1 : 0);
             var wheel = Exp(wheel_delta * (op > 0 ? 2.0 : op < 0 ? 0.5 : 1.0) / 600.0);
             if (this.FGLBase.Zoom(TPosition2D(), wheel)) {
                 this.ViewChanged(true);
@@ -610,39 +597,39 @@ TGLView.prototype = {
             }
         }
     },
-    WMDblClick: function (keys) {
+    WMDblClick: function(keys) {
         this.FDoubleClicked(true);
     },
-    WMKeyDown: function (key, nkeys) {
+    WMKeyDown: function(key, nkeys) {
         this.OnKey(key, nkeys, -1);
     },
-    WMKeyUp: function (key, nkeys) {
+    WMKeyUp: function(key, nkeys) {
         this.OnKey(key, nkeys, 1);
     },
 
-    OnKey: function (key, keys, state /*<0按下:null,>0抬起*/) {
+    OnKey: function(key, keys, state /*<0按下:null,>0抬起*/ ) {
         if (state > 0) {
             switch (key) {
-                case VK_RETURN: //TBD, Key definition
-                    MouseOK(0);
+                case 13: //TBD, Key definition
+                    this.MouseOK(0);
                     break;
-                case VK_ESCAPE:
-                    MouseCancel(0);
+                case 27:
+                    this.MouseCancel(0);
                     break;
-                case VK_BACK:
-                    MouseUndo(0);
+                case 8:
+                    this.MouseUndo(0);
                     break;
-                case VK_INSERT:
-                    MouseInsert(0);
+                case 45:
+                    this.MouseInsert(0);
                     break;
-                case VK_DELETE:
-                    MouseDelete(0);
+                case 46:
+                    this.MouseDelete(0);
                     break;
             }
         }
     },
 
-    GLBase: function (glbase) {
+    GLBase: function(glbase) {
         if (arguments.length == 0) {
             return this.FGLBase;
         } else {
@@ -660,7 +647,7 @@ TGLView.prototype = {
         }
     },
 
-    ModelBound: function (bds) {
+    ModelBound: function(bds) {
         if (arguments.length == 0) {
             return this.FGLBase ? this.FGLBase.ModelBound() : this.TBound2D();
         } else if (this.FGLBase) {
@@ -670,16 +657,16 @@ TGLView.prototype = {
         }
     },
 
-    GLPaint: function (glbase) {
+    GLPaint: function(glbase) {
         if (this.OnGLPaint)
             this.OnGLPaint(glbase);
     },
 
-    RedrawView: function (redraw_all) {
+    RedrawView: function(redraw_all) {
         if (this.OnRedrawView)
             this.OnRedrawView(redraw_all);
     },
-    DrawView: function (dc) {
+    DrawView: function(dc) {
         var color = TRGBColor();
         color.Color(Color);
         if (this.FGLBase) {
@@ -703,74 +690,113 @@ TGLView.prototype = {
                 this.DrawCapturedPoint(dc);
         }
     },
-    DrawViewOnPaint: function () {
+    DrawViewOnPaint: function() {
         var ps = PAINTSTRUCT();
         var dc = BeginPaint(Handle, ps);
         SetBkColor(dc, Color);
         this.DrawView(dc);
         EndPaint(Handle, ps);
     },
-    DrawViewDirectly: function () {
+    DrawViewDirectly: function() {
         var dc = GetDC(Handle);
         this.DrawView(dc);
         ReleaseDC(Handle, dc);
     },
-    OnMessage: function (msg, wparam, lparam) {
-        switch (msg) {
-            case WM_PAINT:
-                this.FCapturedFlag = false;
-                if (this.FGLBase)
-                    this.DrawViewOnPaint();
-                break;
-            case WM_SIZE:
-                if (this.FGLBase) {
-                    var rect;
-                    if (GetClientRect(Handle, rect)) {
-                        if (rect.right > rect.left && rect.bottom > rect.top) {
-                            this.FGLBase.ViewRect(rect);
-                            if (!FValidFlag()) {
-                                FValidFlag(true);
-                                InitializeView();
-                            }
-                        }
-                    }
-                }
-                this.ViewChanged(true);
-                this.NeedDraw(true);
-                this.Invalidate();
-                break;
-            case WM_DISPLAYCHANGE:
-                if (this.FGLBase)
-                    this.FGLBase.ViewResolutionDPI(TVector2D(GetDeviceCaps(this.FGLBase.DC(), LOGPIXELSX), GetDeviceCaps(this.FGLBase.DC(), LOGPIXELSY)));
-                break;
-        }
-        return TGLViewBase.OnMessage(msg, wparam, lparam);
+    OnMessage: function(msg, wparam, lparam) {
+        //       switch (msg) {
+        //           case WM_PAINT:
+        //               this.FCapturedFlag = false;
+        //               if (this.FGLBase)
+        //                   this.DrawViewOnPaint();
+        //               break;
+        //           case WM_SIZE:
+        //               if (this.FGLBase) {
+        //                   var rect;
+        //                   if (GetClientRect(Handle, rect)) {
+        //                       if (rect.right > rect.left && rect.bottom > rect.top) {
+        //                           this.FGLBase.ViewRect(rect);
+        //                           if (!FValidFlag()) {
+        //                               FValidFlag(true);
+        //                               InitializeView();
+        //                           }
+        //                       }
+        //                   }
+        //               }
+        //               this.ViewChanged(true);
+        //               this.NeedDraw(true);
+        //               this.Invalidate();
+        //               break;
+        //           case WM_DISPLAYCHANGE:
+        //               if (this.FGLBase)
+        //                   this.FGLBase.ViewResolutionDPI(TVector2D(GetDeviceCaps(this.FGLBase.DC(), LOGPIXELSX), GetDeviceCaps(this.FGLBase.DC(), LOGPIXELSY)));
+        //               break;
+        //   case WM_MOUSEMOVE:
+        //   WMMouseMove(GenMouseKeys(wparam),lparam,lparam);
+        //   break;
+        // case WM_MOUSEWHEEL:
+        //   WMMouseWheel(GenMouseKeys(wparam),wparam,lparam,lparam);
+        //   break;
+        // case WM_LBUTTONDOWN:
+        //   WMMouseDown(mbLeft,GenMouseKeys(wparam),lparam,lparam);
+        //   break;
+        // case WM_LBUTTONUP:
+        //   WMMouseUp(mbLeft,GenMouseKeys(wparam),lparam,lparam);
+        //   break;
+        // case WM_MBUTTONDOWN:
+        //   WMMouseDown(mbMiddle,GenMouseKeys(wparam),lparam,lparam);
+        //   break;
+        // case WM_MBUTTONUP:
+        //   WMMouseUp(mbMiddle,GenMouseKeys(wparam),lparam,lparam);
+        //   break;
+        // case WM_RBUTTONDOWN:
+        //   WMMouseDown(mbRight,GenMouseKeys(wparam),lparam,lparam);
+        //   break;
+        // case WM_RBUTTONUP:
+        //   WMMouseUp(mbRight,GenMouseKeys(wparam),lparam,lparam);
+        //   break;
+        // case WM_LBUTTONDBLCLK:
+        // case WM_MBUTTONDBLCLK:
+        // case WM_RBUTTONDBLCLK:
+        //   WMDblClick(GenMouseKeys(LOWORD(wparam)));
+        //   break;
+        // case WM_KEYDOWN:
+        //   WMKeyDown((int)wparam,LOWORD(lparam));
+        //   break;
+        // case WM_KEYUP:
+        //   WMKeyUp((int)wparam,LOWORD(lparam));
+        //   break;
+        // case WM_SIZE:
+        //   Invalidate();
+        //   break;
+        //
+        //       }
+        //       return TGLViewBase.OnMessage(msg, wparam, lparam);
     },
-    MapToView: function (mapposition) {
+    MapToView: function(mapposition) {
         return this.FGLBase.MapToView(mapposition);
     },
-    ViewToMap: function (viewposition) {
+    ViewToMap: function(viewposition) {
         return this.FGLBase.ViewToMap(viewposition);
     },
-    ModelToLocal: function (position) {
+    ModelToLocal: function(position) {
         return this.FGLBase.ModelToLocal(position);
     },
-    LocalToModel: function (localposition) {
+    LocalToModel: function(localposition) {
         return this.FGLBase.LocalToModel(localposition);
     },
-    ModelToMap: function (position) {
+    ModelToMap: function(position) {
         return this.FGLBase.ModelToMap(position);
     },
-    MapToModel: function (mapposition) {
+    MapToModel: function(mapposition) {
         return this.FGLBase.MapToModel(mapposition);
     },
-    ViewToModel: function (viewposition) {
+    ViewToModel: function(viewposition) {
         return this.FGLBase.ViewToModel(viewposition);
     },
-    ModelToView: function (position) {
+    ModelToView: function(position) {
         return this.FGLBase.ModelToView(position);
     },
-    ViewScale: function (view_scale) {
+    ViewScale: function(view_scale) {
         if (arguments.length == 0) {
             if (this.FGLBase)
                 return this.FGLBase.ViewScale();
@@ -778,7 +804,7 @@ TGLView.prototype = {
         } else if (this.FGLBase)
             this.FGLBase.ViewScale(view_scale);
     },
-    MapScale: function (mapscale) {
+    MapScale: function(mapscale) {
         if (arguments.length == 0) {
             if (this.FGLBase)
                 return this.FGLBase.MapScale();
@@ -790,12 +816,12 @@ TGLView.prototype = {
             Invalidate();
         }
     },
-    BasePosition: function () {
+    BasePosition: function() {
         if (this.FGLBase)
             return this.FGLBase.BasePosition();
         return TPosition2D();
     },
-    NeedDraw: function (need_draw) {
+    NeedDraw: function(need_draw) {
         if (arguments.length == 0) {
             return FNeedDraw;
         } else if (need_draw) {
@@ -803,10 +829,29 @@ TGLView.prototype = {
             RedrawView(true);
         }
     },
-    ViewChanged: function (changed) {
+    ViewChanged: function(changed) {
         if (changed) {
             FViewChanged = true;
             RedrawView(false);
         }
+    },
+}
+
+var GetMouseKeys = function(event) {
+    var obj = {
+        left: null,
+        middle: null,
+        right: null,
+        shift: null,
+        ctrl: null,
+        alt: null
     }
+    obj.left = event.which == 1;
+    obj.middle = event.which == 2;
+    obj.right = event.which == 3;
+    obj.shift = event.shiftKey;
+    obj.ctrl = event.ctrlKey;
+    obj.alt = event.altKey;
+
+    return obj;
 }

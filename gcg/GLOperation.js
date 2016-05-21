@@ -1,9 +1,6 @@
-﻿function TGLOperation() {
-    if (this == window) {
-        var obj = new TGLOperation();
-        obj.constructor.apply(obj, arguments);
-        return v;
-    }
+﻿
+function TGLOperation() {
+    this.constructor.apply(this, arguments);
 }
 
 TGLOperation.prototype = {
@@ -12,19 +9,19 @@ TGLOperation.prototype = {
     PopupMenu: null,
     Temporary: null,
     Paint2NeedDown: null,
-    
+
     // 构造函数
-    constructor: function (glView) {
-        this.FGLView = glview;
+    constructor: function(glView) {
+        this.FGLView = glView;
         this.MouseState = 0;
         //Cursor(0)
         //PopupMenu(0)
     },
 
     // 事件
-    OnMouseDown: null, //OnMouseDown(canvasObj, keys, position)
-    OnMouseMove: null, //OnMouseMove(canvasObj, keys, position, downflag)
-    OnMouseUp: null, //OnMouseUp(canvasObj, keys, position)
+    OnMouseDown: null, //OnMouseDown(keys, position)
+    OnMouseMove: null, //OnMouseMove(keys, position, downflag)
+    OnMouseUp: null, //OnMouseUp(keys, position)
     OnMouseBegin: null, //OnMouseBegin()
     OnMouseEnd: null, //OnMouseEnd()
     OnMouseOK: null, //OnMouseOK(state)
@@ -35,76 +32,76 @@ TGLOperation.prototype = {
     OnMouseCommand: null, //OnMouseCommand(command, state)
     OnGetPopupMenu: null, //OnGetPopupMenu(popup_menu)
     OnMouseCapture: null, //OnMouseCapture(position, nearsetPosition)
-    OnMouseCapture2D:null,//OnMouseCapture2D(glbase, position, nearsetPosition)
+    OnMouseCapture2D: null, //OnMouseCapture2D(glbase, position, nearsetPosition)
     OnPaint: null, //OnPaint(canvasObj)
     OnPaint2: null, //OnPaint2(canvasObj)
 
     //
-    MouseDown: function (canvasObj, keys, position) {
+    MouseDown: function(keys, position) {
         if (this.OnMouseDown)
-            this.OnMouseDown(canvasObj, keys, position);
+            this.OnMouseDown(keys, position);
     },
-    MouseMove: function (canvasObj, keys, position, downflag) {
+    MouseMove: function(keys, position, downflag) {
         if (this.OnMouseMove)
-            this.OnMouseMove(canvasObj, keys, position, downflag);
+            this.OnMouseMove(keys, position, downflag);
     },
-    MouseUp: function (canvasObj, keys, position) {
+    MouseUp: function(keys, position) {
         if (this.OnMouseUp)
-            this.OnMouseUp(canvasObj, keys, position);
+            this.OnMouseUp(keys, position);
     },
-    MouseBegin: function () {
+    MouseBegin: function() {
         if (this.OnMouseBegin)
             this.OnMouseBegin();
     },
-    MouseEnd: function () {
+    MouseEnd: function() {
         if (this.OnMouseEnd)
             this.OnMouseEnd();
     },
-    MouseOK: function (state) {
+    MouseOK: function(state) {
         if (this.OnMouseOK)
             this.OnMouseOK(state);
     },
-    MouseCancel: function (state) {
+    MouseCancel: function(state) {
         if (this.OnMouseCancel)
             this.OnMouseCancel(state);
     },
-    MouseUndo: function (state) {
+    MouseUndo: function(state) {
         if (this.OnMouseUndo)
             this.OnMouseUndo(state);
     },
-    MouseInsert: function (state) {
+    MouseInsert: function(state) {
         if (this.OnMouseInsert)
             this.OnMouseInsert(state);
     },
-    MouseDelete: function (state) {
+    MouseDelete: function(state) {
         if (this.OnMouseDelete)
             this.OnMouseDelete(state);
     },
-    MouseCommand: function (command, state) {
+    MouseCommand: function(command, state) {
         if (this.OnMouseCommand)
             this.OnMouseCommand(command, state);
     },
-    GetPopupMenu: function (popup_menu) {
+    GetPopupMenu: function(popup_menu) {
         if (this.OnGetPopupMenu)
             this.OnGetPopupMenu(popup_menu);
     },
-    MouseCapture: function (position, nearsetPosition) {
+    MouseCapture: function(position) {
         if (this.OnMouseCapture)
-            this.OnMouseCapture(position, nearsetPosition);
+          return this.OnMouseCapture(position);
     },
-    MouseCapature2D: function (glbase, position, nearsetPosition) {
+    MouseCapture2D: function(glbase, position) {
         if (this.OnMouseCapture2D)
-            this.OnMouseCapture2D(glbase, position, nearsetPosition);
+          return this.OnMouseCapture2D(glbase, position);
     },
-    Paint: function (canvasObj) {
+    Paint: function(canvasObj) {
         if (this.OnPaint)
             this.OnPaint(canvasObj);
     },
-    Paint2: function (canvasObj) {
+    Paint2: function(canvasObj) {
         if (this.OnPaint2)
             this.OnPaint2(canvasObj);
     },
-    Invalidate: function () {
+    Invalidate: function() {
         if (this.FGLView)
             this.FGLView.Invalidate();
     }

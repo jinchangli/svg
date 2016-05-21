@@ -9,7 +9,7 @@ function TPosition2D() {
     if (this == window) {
         var obj = new TPosition2D();
         obj.constructor.apply(obj, arguments);
-        return v;
+        return obj;
     }
 }
 
@@ -88,16 +88,16 @@ TPosition2D.prototype = TVector2D.prototype = {
         this.Y = -this.Y;
     },
     add: function (v) { // +
-        return new TVector2D(this.X + v.X, this.Y + v.Y);
+        return TVector2D(this.X + v.X, this.Y + v.Y);
     },
     sub: function (v) { // -
-        return new TVector2D(this.X - v.X, this.Y - v.Y);
+        return TVector2D(this.X - v.X, this.Y - v.Y);
     },
     mul: function (v) { // *
         if (typeof (v) == "number") {// 数乘
-            return new TVector2D(this.X * v, this.Y * v);
+            return TVector2D(this.X * v, this.Y * v);
         } else {// 复数乘法
-            return new TVector2D(this.X * v.X - this.Y * v.Y, this.X * v.Y + this.Y * v.X);
+            return TVector2D(this.X * v.X - this.Y * v.Y, this.X * v.Y + this.Y * v.X);
         }
     },
     div: function (v) {
@@ -105,17 +105,17 @@ TPosition2D.prototype = TVector2D.prototype = {
             if (v == 0) {
                 console.log("divide 0 error");
             }
-            return new TVector2D(this.X / v, this.Y / v);
+            return TVector2D(this.X / v, this.Y / v);
         } else {//复数除法
             if (Abs(v.X) >= Abs(v.Y)) {
                 var r = v.Y / v.X,
                     d = v.X * (1 + r * r);
-                return new TVector2D((this.X + this.Y * r) / d, (this.Y - this.X * r) / d);
+                return TVector2D((this.X + this.Y * r) / d, (this.Y - this.X * r) / d);
             }
             else {
                 var r = v.X / v.Y,
                     d = v.Y * (1 + r * r);
-                return new TVector2D((this.X * r + this.Y) / d, (this.Y * r - this.X) / d);
+                return TVector2D((this.X * r + this.Y) / d, (this.Y * r - this.X) / d);
             }
         }
     },
@@ -145,22 +145,22 @@ TPosition2D.prototype = TVector2D.prototype = {
         return rst < 0 ? rst + Math.PI * 2 : rst;
     },
     neg: function () {//反向
-        return new TVector2D(-this.X, -this.Y);
+        return TVector2D(-this.X, -this.Y);
     },
     sgn: function () {//单位向量
         var len = this.Abs();
         if (len > 0) {
-            return new TVector2D(this).Div(len);
+            return TVector2D(this).Div(len);
         }
-        return new TVector2D(this);
+        return TVector2D(this);
     },
     lperp: function () {// 左转90°
-        return new TVector2D(-this.Y, this.X);
+        return TVector2D(-this.Y, this.X);
     },
     rperp: function () {// 右转90°
-        return new TVector2D(this.Y, -this.X);
+        return TVector2D(this.Y, -this.X);
     },
     conj: function () {// 共轭
-        return new TVector2D(this.X, -this.Y);
+        return TVector2D(this.X, -this.Y);
     }
 }
