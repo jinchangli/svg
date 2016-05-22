@@ -135,31 +135,170 @@ TGLBase.prototype = {
     }, //视图单位变换: 像素-->米
 
     //绘制标注
-    GLNote: function(position, text, wscale, hscale, direction) {
-        this.Canvas.font = font_name;
-        this.Canvas.textAlign = "center";
-        this.Canvas.textBaseline = "middle";
-        var size = this.Canvas.measureText(text);
-        this.Canvas.translate(position.neg());
-        this.Canvas.rotate(direction);
-        this.Canvas.scale(wscale, hscale);
-        this.Canvas.translate(position);
-        this.Canvas.fillText(text, 0, 0);
-        //  this.Canvas.setTransform(1,0,0,1,0,0);
-        this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A02, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A12);
+    GLNotes: function(notes, wscale, hscale, fontSize, fontFamily) {
+        if (!notes || notes.length == 0) {
+            console.log("GLNotes, notes is empty");
+            return;
+        }
+
+        var ctx = this.Canvas;
+
+        for (var i = 0; i < notes.length; i++) {
+            var note = notes[i];
+            var position = note.position;
+            var text = note.text;
+            var direction = note.direction;
+
+            ctx.save();
+
+            ctx.font = fontSize + " " + fontFamily;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.translate(position.neg());
+            ctx.rotate(direction);
+            ctx.scale(wscale, hscale);
+            ctx.translate(position);
+            ctx.fillText(text, 0, 0);
+
+            ctx.restore();
+        }
+
         return size;
     },
+    GetColor: function() {
+        return "#00FF00";
+    },
 
-    //绘制背景
-    GLNoteMask: function(position, size, wscale, hscale, direction) {
-        this.Canvas.translate(position.neg());
-        this.Canvas.rotate(direction);
-        this.Canvas.scale(wscale, hscale);
-        this.Canvas.translate(position);
-        this.Canvas.rect(-0.5 * size.width, -0.5 * size.height, size.width, size.height);
-        this.Canvas.fill();
+    GLRegions: function(isoLines) {
+        if (!isoLines || isoLines.length <= 0) {
+            console.log("GLRegions, isoLines is empty");
+            return;
+        }
 
-        this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A02, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A12);
+        var ctx = this.Canvas;
+        ctx.save();
+
+        ctx.beiginLocal();
+        for (var index = 0; index < isoLines.length; index++) {
+            var line = isoLines[i].isoLine;
+
+            if (!line || line.length == 0) {
+                continue;
+            }
+
+            ctx.fillStyle = this.GetColor(line.isoValue);
+
+            ctx.beginPath();
+
+            ctx.moveTo(line[0].x, line[0].y);
+
+            for (var pointIndex = 1; pointIndex < line.length; pointIndex++) {
+                var point = line[pointIndex];
+                ctx.lineTo(point.x, point.y);
+            }
+
+            ctx.closePath();
+            ctx.fill(); // end of one line
+        } // end of isoLines
+
+        ctx.restore();
+    },
+
+    GLISOLines: function(notes, isoLines, fontHeight, xScale, yScale) {
+        if (!isoLines || isoLines.length <= 0) {
+            console.log("GLISOLines, isoLines is empty");
+            return;
+        }
+
+        if (!xScale) {
+            xScale = 1;
+        }
+
+        if (!yScale) {
+            yScale = 1;
+        }
+
+        var ctx = this.Canvas;
+        ctx.save();
+
+        this.FGLView.BeginWin();
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(ctx.canvas.clientWidth, 0);
+        ctx.lineTo(ctx.canvas.clientWidth, ctx.canvas.clientHeight);
+        ctx.lineTo(0, ctx.canvas.clientHeight);
+        ctx.closePath();
+
+        if (notes) {
+            this.FGLView.beginMap();
+
+            for (var i = 0; i < notes.length; i++) {
+                var ele = notes[i];
+
+                var noteBackgroundSize = ele.size;
+                var direction = ele.direction;
+                var position = ele.position;
+
+                ctx.save();
+
+                ctx.translate(-position.X, -position.Y);
+                ctx.rotate(direction);
+                ctx.scale(xScale, yScale);
+                ctx.translate(position.X, position.Y);
+
+                var width = ctx.measureText(text).width;
+                var dx = -0.5 * width;
+                var dy = -0.5 * fontHeight;
+
+                ctx.lineTo(-dx, dy);
+                ctx.moveTo(-dx, -dy);
+                ctx.lineTo(dx, -dy);
+                ctx.lineTo(dx, dy);
+                // this.Canvas.rect(-0.5 * size.width, -0.5 * size.height, size.width, size.height);
+                // this.Canvas.fill();
+                ctx.closePath();
+
+                //this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A02, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A12);
+                ctx.restore();
+            }
+        }
+
+        ctx.clip();
+
+        ctx.beiginLocal();
+        for (var index = 0; index < isoLines.length; index++) {
+            var line = isoLines[i].isoLine;
+
+            if (!line || line.length == 0) {
+                continue;
+            }
+
+            var startPoint;
+            for (var pointIndex = 1; pointIndex < line.length; pointIndex++) {
+                var point = line[pointIndex];
+                if (point.isBound) {
+                    startPoint = false;
+                } else {
+                    if (startPoint) {
+                        ctx.lineTo(point.x, point.y);
+                    } else {
+                        ctx.moveTo(point.x, point.y);
+                        startPoint = true;
+                    }
+                }
+            }
+
+            var firstP = line[0];
+            var lastP = line[line.length - 1]
+            if (!firstP.isBound && !lastP.isBound) {
+                ctx.moveTo(lastP.x, lastP.y);
+                ctx.lineTo(firstP.x, firstP.y);
+            } // end of one line
+
+        } // end of isoLines
+
+        ctx.restore();
     },
 
     //显示固定字体文本

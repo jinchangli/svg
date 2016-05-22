@@ -21,43 +21,54 @@ TBound2D.prototype = {
     Min: null, //TPosition2D  左下方坐标
     Max: null, //TPosition2D  右上方坐标
     Valid: null,
-    constructor: function () {//构造函数
+    constructor: function() { //构造函数
         this.Min = TPosition2D();
         this.Max = TPosition2D();
         this.Valid = false;
     },
-    center: function () {
+    center: function() {
         return new TVector2D((this.Min.X + this.Max.X) * 0.5, (this.Min.Y + this.Max.Y) * 0.5);
     },
-    size: function () {
+    size: function() {
         return new TVector2D((this.Max.X - this.Min.X), (this.Max.Y - this.Min.Y));
     },
-    Clear: function () {
+    Clear: function() {
         this.Valid = false;
     },
-    SetBound: function(p) {
-        if (this.Min.X > p.X)
-            this.Min.X = p.X;
-        if (this.Min.Y > p.Y)
-            this.Min.Y = p.Y;
-        if (this.Max.X < p.X)
-            this.Max.X = p.X;
-        if (this.Max.Y < p.Y)
-            this.Max.Y = p.Y;
-        this.Valid = true;
+    SetBound: function(x, y) {
+        if (this.Valid) {
+            if (this.Min.X > x)
+                this.Min.X = x;
+            if (this.Min.Y > y)
+                this.Min.Y = y;
+            if (this.Max.X < x)
+                this.Max.X = x;
+            if (this.Max.Y < y)
+                this.Max.Y = y;
+        } else {
+            this.Min.X = x;
+            this.Min.Y = y;
+            this.Max.X = x;
+            this.Max.Y = y;
+            this.Valid = true;
+        }
     },
-    Move: function (v) {
+    Move: function(v) {
         this.Min.Add(v);
         this.Max.Add(v);
     },
-    Scale: function (d) {
+    Scale: function(d) {
         this.Min.Mul(d);
         this.Max.Mul(d);
     },
-    get_corners: function (corners) {
-        corners[0].X = this.Min.X; corners[0].Y = this.Min.Y;
-        corners[1].X = this.Max.X; corners[1].Y = this.Min.Y;
-        corners[2].X = this.Max.X; corners[2].Y = this.Max.Y;
-        corners[3].X = this.Min.X; corners[3].Y = this.Max.Y;
+    get_corners: function(corners) {
+        corners[0].X = this.Min.X;
+        corners[0].Y = this.Min.Y;
+        corners[1].X = this.Max.X;
+        corners[1].Y = this.Min.Y;
+        corners[2].X = this.Max.X;
+        corners[2].Y = this.Max.Y;
+        corners[3].X = this.Min.X;
+        corners[3].Y = this.Max.Y;
     }
 }

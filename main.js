@@ -1,5 +1,8 @@
 $(function() {
 
+    var bound;
+
+
     var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext("2d");
 
@@ -10,52 +13,6 @@ $(function() {
 
         ctx.clearRect(0, 0, $("#canvas").width(), $("#canvas").height());
         view.FGLBase.BeginView();
-        //         ctx.fillStyle = "#eee";
-        //         ctx.fillRect(0,0,800,500);
-        //
-        // //
-        //       // var text = ctx.measureText("Hello");
-        //
-        //               ctx.globalCompositeOperation  = "destination-out";
-        //               ctx.fillStyle = "green";
-        //               ctx.fillRect(50, 40, 146, 48);
-        //
-        //               ctx.globalCompositeOperation  = "source-over";
-        //               ctx.fillStyle = "red";
-        //               ctx.font = "48px serif";
-        //               ctx.textBaseline = "top";
-        //               ctx.fillText("Hello", 50, 40);
-        //
-        //
-        //                       ctx.beginPath();
-        //                       ctx.moveTo(0,60);
-        //                       ctx.lineTo(400, 60);
-        //                       ctx.stroke();
-        //
-        //
-
-        // //source-over
-        //
-        //         ctx.globalCompositeOperation = "xor";
-        //
-        //         ctx.rect(10,10,10,10);
-        //
-        //         ctx.fill();
-        //
-        //         ctx.rect(10,10,20,20);
-        //         ctx.fill();
-        //
-        //
-        //         ctx.rect(10,10,10,10);
-        //
-        //         ctx.fill();
-        //
-        //         ctx.rect(10,10,20,20);
-        //         ctx.fill();
-        //
-
-
-
     }
 
     var operationForDot = new TGLOperation(view);
@@ -108,8 +65,6 @@ $(function() {
 
     view.MouseOperation(operationForDot);
 
-    view.Paint();
-
     $(document).keydown(function(event) {
         event.preventDefault();
         //event.stopImmediatePropagation();
@@ -150,6 +105,18 @@ $(function() {
 
         $(".download").attr("href", pngUrl);
     });
+
+    // load the contour line data from server
+    $.getJSON("json/geo.json", function(data) {
+        //only if it contains any path data
+        if (data) {
+            bound = utility.GenBoundBox(data.isoLines);
+            view.ModelBound(bound);
+            view.ZoomExtent();
+            view.Paint();
+        }
+    });
+
 });
 
 /**
