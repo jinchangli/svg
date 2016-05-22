@@ -2,7 +2,6 @@ $(function() {
 
     var bound;
 
-
     var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext("2d");
 
@@ -12,6 +11,7 @@ $(function() {
         var ctx = this.Canvas;
 
         ctx.clearRect(0, 0, $("#canvas").width(), $("#canvas").height());
+
         view.FGLBase.BeginView();
     }
 
@@ -66,13 +66,13 @@ $(function() {
     view.MouseOperation(operationForDot);
 
     $(document).keydown(function(event) {
-        event.preventDefault();
+        //  event.preventDefault();
         //event.stopImmediatePropagation();
         view.WMKeyDown(event.which);
     });
 
     $(document).keyup(function(event) {
-        event.preventDefault();
+        //  event.preventDefault();
         //event.stopImmediatePropagation();
         view.WMKeyUp(event.which);
     });
@@ -106,15 +106,20 @@ $(function() {
         $(".download").attr("href", pngUrl);
     });
 
-    // load the contour line data from server
-    $.getJSON("json/geo.json", function(data) {
-        //only if it contains any path data
+    $.ajax({
+        url: "json/geo.json",
+        cache: false,
+        dataType: "json"
+    }).done(function(data) {
         if (data) {
-            bound = utility.GenBoundBox(data.isoLines);
-            view.ModelBound(bound);
-            view.ZoomExtent();
+            // bound = utility.GenBoundBox(data.isoLines);
+            // view.ModelBound(bound);
+            // view.ZoomViewExtent();
             view.Paint();
+            view.FGLBase.GLRegions(data.isoLines);
         }
+    }).fail(function(message) {
+        console.log(message);
     });
 
 });

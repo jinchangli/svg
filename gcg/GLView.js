@@ -37,7 +37,7 @@ TGLView.prototype = {
     constructor: function(canvas) {
         with(this) {
             Canvas = canvas;
-            FGLBase = TGLBase(canvas);
+            FGLBase = new TGLBase(canvas, this);
             MouseDownPosition = TPosition2D();
             MouseDownMapPosition = TPosition2D();
             MouseDownModelPosition = TPosition2D();
@@ -823,35 +823,19 @@ TGLView.prototype = {
     },
     NeedDraw: function(need_draw) {
         if (arguments.length == 0) {
-            return FNeedDraw;
+            return this.FNeedDraw;
         } else if (need_draw) {
-            FNeedDraw = true;
-            RedrawView(true);
+            this.FNeedDraw = true;
+            this.RedrawView(true);
         }
     },
     ViewChanged: function(changed) {
         if (changed) {
-            FViewChanged = true;
-            RedrawView(false);
+            this.FViewChanged = true;
+            this.RedrawView(false);
         }
     },
-}
+    Invalidate:function() {
 
-var GetMouseKeys = function(event) {
-    var obj = {
-        left: null,
-        middle: null,
-        right: null,
-        shift: null,
-        ctrl: null,
-        alt: null
     }
-    obj.left = event.which == 1;
-    obj.middle = event.which == 2;
-    obj.right = event.which == 3;
-    obj.shift = event.shiftKey;
-    obj.ctrl = event.ctrlKey;
-    obj.alt = event.altKey;
-
-    return obj;
 }

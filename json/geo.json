@@ -1,34 +1,70 @@
-
 {
-  "isoLines":
-  [
-    {
-      "isoValue": 400,
-      "isoLine":[{"x":10, "y":10, "isBound": 0}, {"x":15, "y":15, "isBound": 0}, {"x":25, "y":25, "isBound": 0}, {"x":75, "y":75, "isBound": 0}],
-      "area":-1,
-    }
-
-  ],
-
-  "notes":
-  [
-    {
-      "position":{"x":16, "y":16},
-      "diredtion":2.1,
-      "text":"432"
+    "isoLines": [{
+        "isoValue": 400,
+        "isoLine": [{
+            "x": 200,
+            "y": 200,
+            "isBound": 0
+        }, {
+            "x": 200,
+            "y": -200,
+            "isBound": 0
+        }, {
+            "x": -200,
+            "y": -200,
+            "isBound": 0
+        }, {
+            "x": -200,
+            "y": 200,
+            "isBound": 0
+        }],
+        "area": 1
     },
     {
-      "position":{"x":66, "y":66},
-      "diredtion":2.1,
-      "text":"874"
-    },
-  ],
+        "isoValue": 400,
+        "isoLine": [{
+            "x": 100,
+            "y": 100,
+            "isBound": 0
+        }, {
+            "x": 100,
+            "y": -100,
+            "isBound": 0
+        }, {
+            "x": -100,
+            "y": -100,
+            "isBound": 0
+        }, {
+            "x": -100,
+            "y": 100,
+            "isBound": 0
+        }],
+        "area": 1
+    }],
 
-  "bounds":
-  [
-    {
-      "points":[{"x":0, "y":3}, {"x":0, "y":3}]
-    }
-  ]
+    "notes": [{
+        "position": {
+            "x": 16,
+            "y": 16
+        },
+        "diredtion": 2.1,
+        "text": "432"
+    }, {
+        "position": {
+            "x": 66,
+            "y": 66
+        },
+        "diredtion": 2.1,
+        "text": "874"
+    }],
 
+    "bounds": [{
+        "points": [{
+            "x": 0,
+            "y": 3
+        }, {
+            "x": 0,
+            "y": 3
+        }]
+    }]
 }

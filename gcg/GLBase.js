@@ -2,15 +2,12 @@
 //OpenGL基础类
 //------------------------------------------------------------------------------
 var TGLBase = function() {
-    if (this == window) {
-        var obj = new TGLBase();
-        obj.constructor.apply(obj, arguments);
-        return obj;
-    }
+    this.constructor.apply(this, arguments);
 };
 
 TGLBase.prototype = {
     Canvas: null,
+    FGLView: null,
     FViewRect: null, //视区矩形:TRect
     FViewCenter: null, //视图中心:TPosition2D
     FViewScale: null, //视图比例尺=视图(米)/模型(米):double
@@ -25,7 +22,8 @@ TGLBase.prototype = {
     ViewResolution: null, //视图像素分辨率:像素数/米
     FMat2D: null,
 
-    constructor: function(canvas) {
+    constructor: function(canvas, view) {
+        this.FGLView = view;
         this.FViewRect = new TRect();
         this.FViewCenter = TPosition2D();
         this.FStdToView = TVector2D();
@@ -166,7 +164,7 @@ TGLBase.prototype = {
         return size;
     },
     GetColor: function() {
-        return "#00FF00";
+        return "#"+ Math.floor(Math.random()*100)+"5f3d";
     },
 
     GLRegions: function(isoLines) {
@@ -178,15 +176,16 @@ TGLBase.prototype = {
         var ctx = this.Canvas;
         ctx.save();
 
-        ctx.beiginLocal();
+      //  this.BeginLocal();
         for (var index = 0; index < isoLines.length; index++) {
-            var line = isoLines[i].isoLine;
+            var line = isoLines[index].isoLine;
+            var isoValue = isoLines[index].isoValue;
 
             if (!line || line.length == 0) {
                 continue;
             }
 
-            ctx.fillStyle = this.GetColor(line.isoValue);
+            ctx.fillStyle = this.GetColor(isoValue);
 
             ctx.beginPath();
 
@@ -221,7 +220,7 @@ TGLBase.prototype = {
         var ctx = this.Canvas;
         ctx.save();
 
-        this.FGLView.BeginWin();
+        this.BeginWin();
 
         ctx.beginPath();
         ctx.moveTo(0, 0);
@@ -309,10 +308,10 @@ TGLBase.prototype = {
             return this.FModelBound;
         } else {
             this.FModelBound = model_bound;
-            if (this.FModelBound.Valid()) {
+            if (this.FModelBound.Valid) {
                 if (this.FBasePosition.abs() <= 0) {
                     var step_xy = 1000;
-                    this.FBasePosition = this.FModelBound.Center();
+                    this.FBasePosition = this.FModelBound.center();
                     this.FBasePosition = TPosition2D(Math.floor(this.FBasePosition.X / step_xy), Math.floor(this.FBasePosition.Y / step_xy)) * step_xy;
                 }
             } else {
@@ -320,7 +319,7 @@ TGLBase.prototype = {
                 this.FModelBound.SetBound(1, 1);
                 this.FBasePosition = TPosition2D();
             }
-            this.FMapBound = ComputeMapBound();
+            this.FMapBound = this.ComputeMapBound();
         }
     }, //模型范围
     ViewScale: function() {
@@ -429,11 +428,11 @@ TGLBase.prototype = {
         return rst;
     },
     ZoomExtent: function() {
-        if (FModelBound.Valid && FMapBound.Valid) {
-            var rect = Rect();
+        if (this.FModelBound.Valid && this.FMapBound.Valid) {
+            var rect = TRect();
             var size = TVector2D(rect.right - rect.left, rect.bottom - rect.top);
-            var mapsize = this.View_MeterToPixel(this.FMapBound.Size());
-            this.FMapCenter = this.FMapBound.Center();
+            var mapsize = this.View_MeterToPixel(this.FMapBound.size());
+            this.FMapCenter = this.FMapBound.center();
             if (mapsize.X > 0 && mapsize.Y > 0) {
                 var sx = size.cx / mapsize.X,
                     sy = size.cy / mapsize.Y;

@@ -1,5 +1,9 @@
 var TRect = function() {
-
+  if (this == window) {
+      var obj = new TRect();
+      obj.constructor.apply(obj, arguments);
+      return obj;
+  }
 }
 
 TRect.prototype = {

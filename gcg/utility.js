@@ -22,3 +22,23 @@ var utility = {
         return bound2D;
     }
 }
+
+
+var GetMouseKeys = function(event) {
+    var obj = {
+        left: null,
+        middle: null,
+        right: null,
+        shift: null,
+        ctrl: null,
+        alt: null
+    }
+    obj.left = event.which == 1;
+    obj.middle = event.which == 2;
+    obj.right = event.which == 3;
+    obj.shift = event.shiftKey;
+    obj.ctrl = event.ctrlKey;
+    obj.alt = event.altKey;
+
+    return obj;
+}
