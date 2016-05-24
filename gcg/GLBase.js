@@ -139,6 +139,14 @@ TGLBase.prototype = {
             return;
         }
 
+        if (!wscale) {
+            wscale = 1;
+        }
+
+        if (!hscale) {
+            hscale = 1;
+        }
+
         var ctx = this.Canvas;
 
         for (var i = 0; i < notes.length; i++) {
@@ -149,22 +157,21 @@ TGLBase.prototype = {
 
             ctx.save();
 
-            ctx.font = fontSize + " " + fontFamily;
+            ctx.font = fontSize + "px " + fontFamily;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.translate(position.neg());
+            ctx.translate(-position.x, -position.y);
+            ctx.scale(wscale, -hscale);
             ctx.rotate(direction);
-            ctx.scale(wscale, hscale);
-            ctx.translate(position);
+
             ctx.fillText(text, 0, 0);
+            ctx.translate(position.x, position.y);
 
             ctx.restore();
         }
-
-        return size;
     },
     GetColor: function() {
-        return "#"+ Math.floor(Math.random()*100)+"5f3d";
+        return "#" + Math.floor(Math.random() * 100) + "5f3d";
     },
 
     GLRegions: function(isoLines) {
@@ -176,7 +183,7 @@ TGLBase.prototype = {
         var ctx = this.Canvas;
         ctx.save();
 
-      //  this.BeginLocal();
+        //  this.BeginLocal();
         for (var index = 0; index < isoLines.length; index++) {
             var line = isoLines[index].isoLine;
             var isoValue = isoLines[index].isoValue;
@@ -203,7 +210,65 @@ TGLBase.prototype = {
         ctx.restore();
     },
 
-    GLISOLines: function(notes, isoLines, fontHeight, xScale, yScale) {
+    GLNotesMasks: function(notes, fontHeight, xScale, yScale) {
+        if (!xScale) {
+            xScale = 1;
+        }
+
+        if (!yScale) {
+            yScale = 1;
+        }
+
+        var ctx = this.Canvas;
+
+        // 裁剪整个背景区域
+        this.BeginView();
+        ctx.beginPath();
+        var width = ctx.canvas.clientWidth / 2;
+        var height = ctx.canvas.clientHeight / 2;
+        ctx.moveTo(-width, height);
+        ctx.lineTo(width, height);
+        ctx.lineTo(width, -height);
+        ctx.lineTo(-width, -height);
+        ctx.closePath();
+
+        if (notes) {
+            for (var i = 0; i < notes.length; i++) {
+                var ele = notes[i];
+
+                var noteBackgroundSize = ele.size;
+                var direction = ele.direction;
+                var position = ele.position;
+                var text = ele.text;
+
+                ctx.save();
+
+                ctx.translate(-position.X, -position.Y);
+                ctx.rotate(direction);
+                ctx.scale(xScale, yScale);
+
+
+                var width = ctx.measureText(text).width;
+                var dx = 0.5 * width;
+                var dy = 0.5 * fontHeight;
+
+                ctx.moveTo(-dx, -dy);
+                ctx.lineTo(dx, -dy);
+                ctx.lineTo(dx, dy);
+                ctx.lineTo(-dx, dy);
+                //  ctx.closePath();
+                ctx.stroke();
+
+              ctx.translate(position.X, position.Y);
+
+                ctx.restore();
+            }
+        }
+
+        //  ctx.clip();
+    },
+
+    GLISOLines: function(isoLines, xScale, yScale) {
         if (!isoLines || isoLines.length <= 0) {
             console.log("GLISOLines, isoLines is empty");
             return;
@@ -218,63 +283,65 @@ TGLBase.prototype = {
         }
 
         var ctx = this.Canvas;
-        ctx.save();
 
-        this.BeginWin();
+        // // 裁剪整个背景区域
+        // this.BeginWin();
+        // ctx.beginPath();
+        // ctx.moveTo(0, 0);
+        // ctx.lineTo(ctx.canvas.clientWidth, 0);
+        // ctx.lineTo(ctx.canvas.clientWidth, ctx.canvas.clientHeight);
+        // ctx.lineTo(0, ctx.canvas.clientHeight);
+        // ctx.closePath();
+        //
+        // if (notes) {
+        //     this.BeginView();
+        //
+        //     for (var i = 0; i < notes.length; i++) {
+        //         var ele = notes[i];
+        //
+        //         var noteBackgroundSize = ele.size;
+        //         var direction = ele.direction;
+        //         var position = ele.position;
+        //         var text = ele.text;
+        //
+        //         ctx.save();
+        //
+        //         ctx.translate(-position.X, -position.Y);
+        //         ctx.rotate(direction);
+        //         ctx.scale(xScale, yScale);
+        //         ctx.translate(position.X, position.Y);
+        //
+        //         var width = ctx.measureText(text).width;
+        //         var dx = -0.5 * width;
+        //         var dy = -0.5 * fontHeight;
+        //
+        //         ctx.lineTo(-dx, dy);
+        //         ctx.moveTo(-dx, -dy);
+        //         ctx.lineTo(dx, -dy);
+        //         ctx.lineTo(dx, dy);
+        //         // this.Canvas.rect(-0.5 * size.width, -0.5 * size.height, size.width, size.height);
+        //         // this.Canvas.fill();
+        //         ctx.closePath();
+        //
+        //         //this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A02, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A12);
+        //         ctx.restore();
+        //     }
+        // }
+        //
+        // ctx.clip();
 
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(ctx.canvas.clientWidth, 0);
-        ctx.lineTo(ctx.canvas.clientWidth, ctx.canvas.clientHeight);
-        ctx.lineTo(0, ctx.canvas.clientHeight);
-        ctx.closePath();
 
-        if (notes) {
-            this.FGLView.beginMap();
-
-            for (var i = 0; i < notes.length; i++) {
-                var ele = notes[i];
-
-                var noteBackgroundSize = ele.size;
-                var direction = ele.direction;
-                var position = ele.position;
-
-                ctx.save();
-
-                ctx.translate(-position.X, -position.Y);
-                ctx.rotate(direction);
-                ctx.scale(xScale, yScale);
-                ctx.translate(position.X, position.Y);
-
-                var width = ctx.measureText(text).width;
-                var dx = -0.5 * width;
-                var dy = -0.5 * fontHeight;
-
-                ctx.lineTo(-dx, dy);
-                ctx.moveTo(-dx, -dy);
-                ctx.lineTo(dx, -dy);
-                ctx.lineTo(dx, dy);
-                // this.Canvas.rect(-0.5 * size.width, -0.5 * size.height, size.width, size.height);
-                // this.Canvas.fill();
-                ctx.closePath();
-
-                //this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A02, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A12);
-                ctx.restore();
-            }
-        }
-
-        ctx.clip();
-
-        ctx.beiginLocal();
+        //this.BeginLocal();
+        //ctx.beginPath()
         for (var index = 0; index < isoLines.length; index++) {
-            var line = isoLines[i].isoLine;
+            var line = isoLines[index].isoLine;
 
             if (!line || line.length == 0) {
                 continue;
             }
 
-            var startPoint;
-            for (var pointIndex = 1; pointIndex < line.length; pointIndex++) {
+            var startPoint = false;
+            for (var pointIndex = 0; pointIndex < line.length; pointIndex++) {
                 var point = line[pointIndex];
                 if (point.isBound) {
                     startPoint = false;
@@ -295,9 +362,8 @@ TGLBase.prototype = {
                 ctx.lineTo(firstP.x, firstP.y);
             } // end of one line
 
+            ctx.stroke();
         } // end of isoLines
-
-        ctx.restore();
     },
 
     //显示固定字体文本
