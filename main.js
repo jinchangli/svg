@@ -17,7 +17,7 @@ $(function() {
         var bound = utility.GenBoundBox(data.isoLines);
         view.ModelBound(bound);
         view.ZoomViewExtent();
-        view.FGLBase.BeginView();
+        view.FGLBase.BeginLocal();
 
         view.FGLBase.GLRegions(data.isoLines);
 
@@ -28,7 +28,7 @@ $(function() {
 
         view.FGLBase.GLNotes(data.notes, 1, 1, 32, "serif");
 
-        view.FGLBase.EndView();
+         view.FGLBase.EndView();
     }
 
     var operationForDot = new TGLOperation(view);
@@ -40,7 +40,7 @@ $(function() {
         //如果存在最短距离点， 就将当前的等值线设为选定的等值线
         if (nearestPosition) {
             var lineIndex = nearestPosition.lineIndex;
-            state.setSelectedPath(isoLines[lineIndex]);
+            state.setSelectedPath(originalData.isoLines[lineIndex]);
 
 
             // 将当前最近点置于选中状态
@@ -57,7 +57,8 @@ $(function() {
     }
 
     operationForDot.OnMouseCapture = function(position) {
-        var min = 3;
+        position = view.FGLBase.ViewToLocal(position);
+        var min = view.FGLBase.ViewToModel_Vector(TVector2D(3,3)).X;
         var nearestPosition;
         var path = state.getSelectedPath();
 

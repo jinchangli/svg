@@ -36,7 +36,7 @@ TGLBase.prototype = {
        rct.bottom = 1;
        this.ViewRect(rct);
 
-       this.ViewResolution = 96;
+       this.ViewResolution = 96/0.0254;
        this.FMat2D = TMatrix2D();
        this.FMinZoom = 1E7;
        this.FMaxZoom = 1E-7;
@@ -124,6 +124,12 @@ TGLBase.prototype = {
    ViewToScreen: function (point2d) {
        return TPosition2D(Math.floor(point2d.X + this.FViewCenter.X) - this.FViewRect.left, Math.floor(this.FViewCenter.Y - point2d.Y) - this.FViewRect.top);
    }, //坐标变换:视图-->屏幕
+   ViewToLocal: function (point2d) {
+       return this.ModelToLocal(this.MapToModel(this.ViewToMap(point2d)));
+   }, //坐标变换:视图-->本地
+   LocalToView: function (point2d) {
+       return this.ModelToView(this.LocalToModel(view_position));
+   }, //坐标变换:视图-->本地
    ScreenToView: function (point) {
        return TPosition2D(point.x + this.FViewRect.left - this.FViewCenter.X, this.FViewCenter.Y - point.y - this.FViewRect.top);
    }, //坐标变换:屏幕-->视图
@@ -336,7 +342,7 @@ TGLBase.prototype = {
                if (this.FBasePosition.abs() <= 0) {
                    var step_xy = 1000;
                    this.FBasePosition = this.FModelBound.center();
-                   this.FBasePosition = TPosition2D(Math.floor(this.FBasePosition.X / step_xy), Math.floor(this.FBasePosition.Y / step_xy)) * step_xy;
+                   this.FBasePosition = TPosition2D(Math.floor(this.FBasePosition.X / step_xy), Math.floor(this.FBasePosition.Y / step_xy)).mul(step_xy);
                }
            } else {
                this.FModelBound.SetBound(-1, -1);
@@ -364,7 +370,7 @@ TGLBase.prototype = {
        this.FMat2D.Scale(1 / this.FMapScale, 1 / this.FMapScale) //this.Canvas.scale(1/this.FMapScale, 1/this.FMapScale);
        this.FMat2D.Translate(-this.FBasePosition.X, -this.FBasePosition.Y); //this.Canvas.translate(-this.FBasePosition.X, -this.FBasePosition.Y);
        this.Canvas.save();
-       this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A02, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A12);
+       this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A02, this.FMat2D.A12);
    },
    EndModel: function () {
        this.Canvas.restore();
@@ -376,10 +382,11 @@ TGLBase.prototype = {
        this.FMat2D.Transform(1, 0, 0, -1, this.FViewCenter.X, this.FViewCenter.Y); //this.Canvas.transform(1,0,0,-1,FViewCenter.X,FViewCenter.Y);
        this.FMat2D.Scale(this.FViewScale * this.ViewResolution, this.FViewScale * this.ViewResolution); //this.Canvas.scale(this.FViewScale*this.ViewResolution, this.FViewScale*this.ViewResolution);
        this.FMat2D.Translate(-this.FMapCenter.X, -this.FMapCenter.Y); //this.Canvas.translate(-this.FMapCenter.X, -this.FMapCenter.Y);
-       this.FMat2D.Scale(1 / this.FMapScale, 1 / this.FMapScale); //this.Canvas.scale(1/this.FMapScale, 1/this.FMapScale);
+      //  this.FMat2D.Scale(1 / this.FMapScale, 1 / this.FMapScale); //this.Canvas.scale(1/this.FMapScale, 1/this.FMapScale);
+
 
        this.Canvas.save();
-       this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A02, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A12);
+       this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A02, this.FMat2D.A12);
    },
    EndLocal: function () {
        this.Canvas.restore();
@@ -392,7 +399,7 @@ TGLBase.prototype = {
        this.FMat2D.Scale(this.FViewScale * this.ViewResolution, this.FViewScale * this.ViewResolution); //this.Canvas.scale(this.FViewScale*this.ViewResolution, this.FViewScale*this.ViewResolution);
 
        this.Canvas.save();
-       this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A02, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A12);
+       this.Canvas.setTransform(this.FMat2D.A00,  this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11,this.FMat2D.A02, this.FMat2D.A12);
    },
    EndMap: function () {
        this.Canvas.restore();
@@ -404,7 +411,7 @@ TGLBase.prototype = {
        this.FMat2D.Transform(1, 0, 0, -1, this.FViewCenter.X, this.FViewCenter.Y); //this.Canvas.transform(1,0,0,-1,FViewCenter.X,FViewCenter.Y);
 
        this.Canvas.save();
-       this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A02, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A12);
+       this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A02, this.FMat2D.A12);
    },
    EndView: function () {
        this.Canvas.restore();
@@ -476,13 +483,13 @@ TGLBase.prototype = {
    },
    ZoomExtent: function () {
        if (this.FModelBound.Valid && this.FMapBound.Valid) {
-           var rect = TRect();
+           var rect = this.ViewRect();
            var size = TVector2D(rect.right - rect.left, rect.bottom - rect.top);
            var mapsize = this.View_MeterToPixel(this.FMapBound.size());
            this.FMapCenter = this.FMapBound.center();
            if (mapsize.X > 0 && mapsize.Y > 0) {
-               var sx = size.cx / mapsize.X,
-                   sy = size.cy / mapsize.Y;
+               var sx = size.X / mapsize.X,
+                   sy = size.Y / mapsize.Y;
                this.FViewScale = 0.95 * (sx < sy ? sx : sy);
            } else if (mapsize.X > 0) {
                this.FViewScale = 0.95 * size.cx / mapsize.X;
@@ -536,7 +543,7 @@ TGLBase.prototype = {
        return this.View_MeterToPixel(map_vector.mul(this.FViewScale));
    },
    ViewToMap_Vector: function (view_vector) { //视图空间-->地图空间
-       return this.View_PixelToMeter(view_vector) / this.FViewScale;
+       return this.View_PixelToMeter(view_vector).div(this.FViewScale);
    },
    ViewToModel_Vector: function (view_vector) { //视图空间-->模型空间
        return this.MapToModel_Vector(this.ViewToMap_Vector(view_vector));
@@ -553,7 +560,7 @@ TGLBase.prototype = {
        this.Canvas.textBaseline = "middle";
        this.Canvas.fillText(str, 0, 0);
        //this.Canvas.setTransform();
-       this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A02, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A12);
+       this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A02, this.FMat2D.A12);
    },
    //计算地图边界
    ComputeMapBound: function () {

@@ -2,6 +2,7 @@ var state = (function() {
     var view = null;
     var selectedPath = null;
     var selectingPathDotsStatus = false;
+    var selectedPoints = null;
 
     var pathSelected = function(path) {
         selectedPath = path;
@@ -55,6 +56,32 @@ var state = (function() {
         },
         stopSelectingPathDots: function() {
             selectingPathDotsStatus = false;
+        },
+
+        selectPoint:function(point) {
+           if(!selectedPoints){
+             selectedPoints = [];
+           }
+
+           selectedPoints.push(point);
+        },
+        tryUnselectPoint:function(point) {
+            if(selectedPoints){
+                var index = -1;
+                for(var i = 0;i<selectedPoints.length;i++){
+                  var p = selectedPoints[i];
+                  if(p.is_eql(point)){
+                    index = i;
+                    break;
+                  }
+                }
+
+                if(index==0){
+                   selectedPath = null;
+                }else if(index >0){
+
+                }
+            }
         }
 
     };
