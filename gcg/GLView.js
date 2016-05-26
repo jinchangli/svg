@@ -667,42 +667,38 @@ TGLView.prototype = {
         if (this.OnRedrawView)
             this.OnRedrawView(redraw_all);
     },
-    DrawView: function(dc) {
-        var color = TRGBColor();
-        color.Color(Color);
+    DrawView: function() {
         if (this.FGLBase) {
-            this.FGLBase.GLPainting(false, dc);
             this.GLPaint(glview);
-            this.FGLBase.GLPainting(false, 0);
         }
         this.FNeedDraw = false;
         this.FViewChanged = false;
-        var flag = this.FMouseOperation && (!this.FMouseOperation.Paint2NeedDown() || this.FMouseLeftButtonDown);
+        var flag = this.FMouseOperation && (!this.FMouseOperation.Paint2NeedDown || this.FMouseLeftButtonDown);
         if (this.FMouseOperation0 || flag || this.FCapturedFlag) {
-            this.Paint(dc);
-            this.Paint2(dc);
+            this.Paint();
+            this.Paint2();
             if (this.FMouseOperation0)
-                this.FMouseOperation0.Paint(dc);
+                this.FMouseOperation0.Paint();
             if (this.FMouseOperation)
-                this.FMouseOperation.Paint(dc);
+                this.FMouseOperation.Paint();
             if (flag)
-                this.FMouseOperation.Paint2(dc);
+                this.FMouseOperation.Paint2();
             if (this.FCapturedFlag)
-                this.DrawCapturedPoint(dc);
+                this.DrawCapturedPoint();
         }
     },
-    DrawViewOnPaint: function() {
-        var ps = PAINTSTRUCT();
-        var dc = BeginPaint(Handle, ps);
-        SetBkColor(dc, Color);
-        this.DrawView(dc);
-        EndPaint(Handle, ps);
-    },
-    DrawViewDirectly: function() {
-        var dc = GetDC(Handle);
-        this.DrawView(dc);
-        ReleaseDC(Handle, dc);
-    },
+//    DrawViewOnPaint: function() {
+//        var ps = PAINTSTRUCT();
+//        var dc = BeginPaint(Handle, ps);
+//        SetBkColor(dc, Color);
+//        this.DrawView(dc);
+//        EndPaint(Handle, ps);
+//    },
+//    DrawViewDirectly: function() {
+//        var dc = GetDC(Handle);
+//        this.DrawView(dc);
+//        ReleaseDC(Handle, dc);
+//    },
     OnMessage: function(msg, wparam, lparam) {
         //       switch (msg) {
         //           case WM_PAINT:

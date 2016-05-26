@@ -108,6 +108,10 @@ var getNearestPointOnPath = function(points, min, target) {
     }
 }
 
+var IsZero = function(vector) {
+   return vector.X == 0 && vector.Y == 0;
+}
+
 var addEvent = (function(window, undefined) {
     var _eventCompat = function(event) {
         var type = event.type;

@@ -6,14 +6,29 @@ $(function() {
     var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext("2d");
 
-    var view = new TGLView(ctx);
+    var view = window.view = new TGLView(ctx);
     view.AllowCapture = true;
     view.OnPaint = function() {
-        var ctx = this.Canvas;
+        window.ctx = this.Canvas;
+        var data = originalData;
 
         ctx.clearRect(0, 0, $("#canvas").width(), $("#canvas").height());
 
+        var bound = utility.GenBoundBox(data.isoLines);
+        view.ModelBound(bound);
+        view.ZoomViewExtent();
         view.FGLBase.BeginView();
+
+        view.FGLBase.GLRegions(data.isoLines);
+
+        ctx.save();
+        view.FGLBase.GLNotesMasks(data.notes, 32, "serif", 1, 1);
+        view.FGLBase.GLISOLines(data.isoLines);
+        ctx.restore();
+
+        view.FGLBase.GLNotes(data.notes, 1, 1, 32, "serif");
+
+        view.FGLBase.EndView();
     }
 
     var operationForDot = new TGLOperation(view);
@@ -145,20 +160,7 @@ $(function() {
     }).done(function(data) {
         if (data) {
             originalData = data;
-            bound = utility.GenBoundBox(data.isoLines);
-            view.ModelBound(bound);
-            view.ZoomViewExtent();
-          //  view.FGLBase.BeginLocal();
-
-            view.FGLBase.GLRegions(data.isoLines);
-
-            ctx.save();
-            view.FGLBase.GLNotesMasks(data.notes, 32, "serif", 1, 1);
-            view.FGLBase.GLISOLines(data.isoLines);
-            ctx.restore();
-
-            view.FGLBase.GLNotes(data.notes, 1, 1, 32, "serif");
-
+            view.Paint();
 
             // ctx.fillStyle  = "green";
             // ctx.fillRect(0,0, 800,500);
