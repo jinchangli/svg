@@ -35,20 +35,17 @@ $(function() {
     operationForDot.OnMouseDown = function(keys, position) {
         console.log("mouse down");
 
-        // //this.FGLView.Paint();
-        // ctx.beginPath();
-        // var view = this.FGLView;
-        //
-        // if (view.Points && view.Points.length > 0) {
-        //     ctx.moveTo(view.Points[view.Points.length - 1].X, view.Points[view.Points.length - 1].Y);
-        // }
-        //
-        // //  $.each(view.Points, function(index, ele) {
-        // ctx.lineTo(position.X, position.Y);
-        // //})
-        //
-        // ctx.stroke();
-        // view.Points.push(position);
+        var nearestPosition = this.OnMouseCapture(position);
+
+        //如果存在最短距离点， 就将当前的等值线设为选定的等值线
+        if (nearestPosition) {
+            var lineIndex = nearestPosition.lineIndex;
+            state.setSelectedPath(isoLines[lineIndex]);
+
+
+            // 将当前最近点置于选中状态
+            view.DrawCapturedPoint(nearestPosition.X, nearestPosition.Y);
+        }
     }
 
     operationForDot.OnMouseEnd = function() {
@@ -61,7 +58,7 @@ $(function() {
 
     operationForDot.OnMouseCapture = function(position) {
         var min = 3;
-        var nearsetPosition;
+        var nearestPosition;
         var path = state.getSelectedPath();
 
         if (!path) {
@@ -75,7 +72,8 @@ $(function() {
 
                 var result = getNearestPointOnPath(points, min, position);
                 if (result) {
-                    nearsetPosition = result.position;
+                    nearestPosition = result.position;
+                    nearestPosition.lineIndex = lineIndex;
                     min = result.distance;
                 }
             }
@@ -83,12 +81,12 @@ $(function() {
             var points = path.isoLine;
             var result = getNearestPointOnPath(points, 3, position);
             if (result) {
-                nearsetPosition = result.position;
+                nearestPosition = result.position;
                 min = result.distance;
             }
         }
 
-        return nearsetPosition;
+        return nearestPosition;
     }
 
     operationForDot.OnMouseOK = function(state) {
@@ -161,9 +159,6 @@ $(function() {
         if (data) {
             originalData = data;
             view.Paint();
-
-            // ctx.fillStyle  = "green";
-            // ctx.fillRect(0,0, 800,500);
         }
     }).fail(function(message) {
         console.log(message);

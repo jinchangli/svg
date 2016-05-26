@@ -316,24 +316,23 @@ TGLView.prototype = {
     },
 
     GenCapturePosition: function(keys, x, y) {
-        if (this.FCapturedFlag)
-          {
-             this.DrawCapturedPoint();
-          }
+        if (this.FCapturedFlag) {
+            this.DrawCapturedPoint();
+        }
 
         var point = {
             x: x,
             y: y
         };
 
-        var mouse_position = TPosition2D(x,y); //this.ScreenToView(point);
+        var mouse_position = TPosition2D(x, y); //this.ScreenToView(point);
 
         if (this.AllowCapture && this.FEnableCapture && this.FMouseOperation) {
             this.FCapturedFlag = false;
             var captured_position = this.FMouseOperation.MouseCapture2D(this.FGLBase, mouse_position);
 
-            if(!captured_position){
-              captured_position = this.FMouseOperation.MouseCapture(mouse_position);
+            if (!captured_position) {
+                captured_position = this.FMouseOperation.MouseCapture(mouse_position);
             }
 
             if (captured_position) {
@@ -345,18 +344,29 @@ TGLView.prototype = {
             this.DrawCapturedPoint();
         return mouse_position;
     },
-    DrawCapturedPoint: function() {
-        var p = { x: this.FCapturedPosition.X, y: this.FCapturedPosition.Y};
+    DrawCapturedPoint: function(x, y) {
+        if (x == undefined || x == null) {
+            x = this.FCapturedPosition.X;
+        }
+
+        if (y == undefined || y == null) {
+            y = this.FCapturedPosition.Y;
+        }
+        
+        var p = {
+            x: x,
+            y: y
+        };
         //var rop2 = this.SetROP2(dc, R2_XORPEN);
         var ctx = this.Canvas;
         ctx.save();
         this.Canvas.globalCompositeOperation = "xor";
         //var pen = this.SelectObject(dc, CreatePen(PS_SOLID, 0, 0x00FF0000)); //TBD HPEN
         ctx.beginPath();
-        ctx.rect(p.x - 2, p.y -2, 5, 5);
+        ctx.rect(p.x - 2, p.y - 2, 5, 5);
         ctx.fill();
         //ctx.closePath();
-        ctx.rect(p.x-4, p.y-4, 9, 9);
+        ctx.rect(p.x - 4, p.y - 4, 9, 9);
         ctx.fill();
 
         ctx.restore();
@@ -477,14 +487,14 @@ TGLView.prototype = {
         return false;
     },
 
-    ProcessMouseDown: function( keys, position) {
+    ProcessMouseDown: function(keys, position) {
         if (this.FMouseOperation)
             this.FMouseOperation.MouseDown(keys, position);
         this.FMouseLeftButtonDown = true;
     },
     ProcessMouseMove: function(keys, position) {
         if (this.FMouseOperation) {
-          var moveOffset = this.MouseMovePosition.sub(position).abs();
+            var moveOffset = this.MouseMovePosition.sub(position).abs();
             if (moveOffset >= this.MinMove)
                 this.FMouseOperation.MouseMove(keys, position, this.FMouseLeftButtonDown);
             else
@@ -559,7 +569,7 @@ TGLView.prototype = {
             y: y
         };
         var position = (this.ScreenToView(point));
-      //  var dc = GetDC(Handle);
+        //  var dc = GetDC(Handle);
         if (this.ProcessMouseMove0(keys, position)) {
             if (this.FMouseOperation && (!this.FMouseOperation.Paint2NeedDown || this.FMouseLeftButtonDown))
                 this.FMouseOperation.Paint2();
@@ -832,7 +842,7 @@ TGLView.prototype = {
             this.RedrawView(false);
         }
     },
-    Invalidate:function() {
+    Invalidate: function() {
 
     }
 }
