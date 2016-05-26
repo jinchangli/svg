@@ -43,6 +43,70 @@ var GetMouseKeys = function(event) {
     return obj;
 }
 
+var getFontStyle = function(fontSize, fontFamily) {
+    return fontSize + "px" + " " + fontFamily;
+}
+
+function clone(obj) {
+    // Handle the 3 simple types, and null or undefined
+    if (null == obj || "object" != typeof obj) return obj;
+
+    // Handle Date
+    if (obj instanceof Date) {
+        var copy = new Date();
+        copy.setTime(obj.getTime());
+        return copy;
+    }
+
+    // Handle Array
+    if (obj instanceof Array) {
+        var copy = [];
+        for (var i = 0, len = obj.length; i < len; ++i) {
+            copy[i] = clone(obj[i]);
+        }
+        return copy;
+    }
+
+    // Handle Object
+    if (obj instanceof Object) {
+        var copy = {};
+        for (var attr in obj) {
+            if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+        }
+        return copy;
+    }
+
+    throw new Error("Unable to copy obj! Its type isn't supported.");
+}
+
+var getNearestPointOnPath = function(points, min, target) {
+    if (!points || points.length == 0) {
+        return null;
+    }
+    var nearsetPosition = null;
+    for (var pointIndex = 0; pointIndex < points.length; pointIndex++) {
+        var point = points[pointIndex];
+        if (point.isBound) {
+            continue;
+        }
+
+        var pointCoor = TPosition2D(point.x, point.y);
+        var distance = pointCoor.sub(target).abs();
+        if (distance < min) {
+            min = distance;
+            nearsetPosition = pointCoor;
+        }
+    }
+
+    if (nearsetPosition) {
+        return {
+            position: nearsetPosition,
+            distance: min
+        };
+    } else {
+        return null;
+    }
+}
 
 var addEvent = (function(window, undefined) {
     var _eventCompat = function(event) {

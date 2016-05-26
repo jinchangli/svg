@@ -21,6 +21,8 @@ TGLBase.prototype = {
     FBasePosition: null, //基准坐标
     ViewResolution: null, //视图像素分辨率:像素数/米
     FMat2D: null,
+    ISOLines: null,
+
 
     constructor: function(canvas, view) {
         this.FGLView = view;
@@ -148,7 +150,7 @@ TGLBase.prototype = {
         }
 
         var ctx = this.Canvas;
-
+        ctx.beginPath();
         for (var i = 0; i < notes.length; i++) {
             var note = notes[i];
             var position = note.position;
@@ -160,12 +162,12 @@ TGLBase.prototype = {
             ctx.font = fontSize + "px " + fontFamily;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.translate(-position.x, -position.y);
-            ctx.scale(wscale, -hscale);
+            ctx.translate(position.x, position.y);
+            ctx.scale(wscale, hscale);
             ctx.rotate(direction);
 
             ctx.fillText(text, 0, 0);
-            ctx.translate(position.x, position.y);
+            ctx.translate(-position.x, -position.y);
 
             ctx.restore();
         }
@@ -210,7 +212,7 @@ TGLBase.prototype = {
         ctx.restore();
     },
 
-    GLNotesMasks: function(notes, fontHeight, xScale, yScale) {
+    GLNotesMasks: function(notes, fontHeight, fontFamily, xScale, yScale) {
         if (!xScale) {
             xScale = 1;
         }
@@ -222,50 +224,54 @@ TGLBase.prototype = {
         var ctx = this.Canvas;
 
         // 裁剪整个背景区域
-        this.BeginView();
+        // this.BeginWin();
         ctx.beginPath();
-        var width = ctx.canvas.clientWidth / 2;
-        var height = ctx.canvas.clientHeight / 2;
-        ctx.moveTo(-width, height);
+        // var width = ctx.canvas.clientWidth / 2;
+        // var height = ctx.canvas.clientHeight / 2;
+        // ctx.moveTo(-width, height);
+        // ctx.lineTo(width, height);
+        // ctx.lineTo(width, -height);
+        // ctx.lineTo(-width, -height);
+
+        var width = ctx.canvas.clientWidth;
+        var height = ctx.canvas.clientHeight;
+        ctx.moveTo(0, 0);
+        ctx.lineTo(width, 0);
         ctx.lineTo(width, height);
-        ctx.lineTo(width, -height);
-        ctx.lineTo(-width, -height);
+        ctx.lineTo(0, height);
         ctx.closePath();
 
         if (notes) {
             for (var i = 0; i < notes.length; i++) {
                 var ele = notes[i];
 
-                var noteBackgroundSize = ele.size;
                 var direction = ele.direction;
                 var position = ele.position;
                 var text = ele.text;
 
                 ctx.save();
 
-                ctx.translate(-position.X, -position.Y);
+                ctx.translate(position.x, position.y);
                 ctx.rotate(direction);
                 ctx.scale(xScale, yScale);
-
-
+                ctx.font = getFontStyle(fontHeight, fontFamily);
                 var width = ctx.measureText(text).width;
-                var dx = 0.5 * width;
-                var dy = 0.5 * fontHeight;
+                var dx =Math.floor(0.5 * width)+0.5;
+                var dy = Math.floor(0.5 * fontHeight)+0.5;
 
-                ctx.moveTo(-dx, -dy);
+                ctx.moveTo(-dx, dy);
+                ctx.lineTo(-dx, -dy);
                 ctx.lineTo(dx, -dy);
                 ctx.lineTo(dx, dy);
-                ctx.lineTo(-dx, dy);
-                //  ctx.closePath();
-                ctx.stroke();
+                ctx.closePath();
 
-              ctx.translate(position.X, position.Y);
+                ctx.translate(-position.x, -position.y);
 
                 ctx.restore();
             }
         }
 
-        //  ctx.clip();
+          ctx.clip("evenodd");
     },
 
     GLISOLines: function(isoLines, xScale, yScale) {
@@ -273,6 +279,8 @@ TGLBase.prototype = {
             console.log("GLISOLines, isoLines is empty");
             return;
         }
+
+        this.ISOLines =  isoLines;
 
         if (!xScale) {
             xScale = 1;
@@ -284,55 +292,8 @@ TGLBase.prototype = {
 
         var ctx = this.Canvas;
 
-        // // 裁剪整个背景区域
-        // this.BeginWin();
-        // ctx.beginPath();
-        // ctx.moveTo(0, 0);
-        // ctx.lineTo(ctx.canvas.clientWidth, 0);
-        // ctx.lineTo(ctx.canvas.clientWidth, ctx.canvas.clientHeight);
-        // ctx.lineTo(0, ctx.canvas.clientHeight);
-        // ctx.closePath();
-        //
-        // if (notes) {
-        //     this.BeginView();
-        //
-        //     for (var i = 0; i < notes.length; i++) {
-        //         var ele = notes[i];
-        //
-        //         var noteBackgroundSize = ele.size;
-        //         var direction = ele.direction;
-        //         var position = ele.position;
-        //         var text = ele.text;
-        //
-        //         ctx.save();
-        //
-        //         ctx.translate(-position.X, -position.Y);
-        //         ctx.rotate(direction);
-        //         ctx.scale(xScale, yScale);
-        //         ctx.translate(position.X, position.Y);
-        //
-        //         var width = ctx.measureText(text).width;
-        //         var dx = -0.5 * width;
-        //         var dy = -0.5 * fontHeight;
-        //
-        //         ctx.lineTo(-dx, dy);
-        //         ctx.moveTo(-dx, -dy);
-        //         ctx.lineTo(dx, -dy);
-        //         ctx.lineTo(dx, dy);
-        //         // this.Canvas.rect(-0.5 * size.width, -0.5 * size.height, size.width, size.height);
-        //         // this.Canvas.fill();
-        //         ctx.closePath();
-        //
-        //         //this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A02, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A12);
-        //         ctx.restore();
-        //     }
-        // }
-        //
-        // ctx.clip();
-
-
         //this.BeginLocal();
-        //ctx.beginPath()
+        ctx.beginPath()
         for (var index = 0; index < isoLines.length; index++) {
             var line = isoLines[index].isoLine;
 
@@ -398,6 +359,7 @@ TGLBase.prototype = {
 
 
     BeginModel: function() {
+        console.log("model space");
         this.FMat2D.Identity();
         this.FMat2D.Transform(1, 0, 0, -1, this.FViewCenter.X, this.FViewCenter.Y); //this.Canvas.transform(1,0,0,-1,FViewCenter.X,FViewCenter.Y);
         this.FMat2D.Scale(this.FViewScale * this.ViewResolution, this.FViewScale * this.ViewResolution); //this.Canvas.scale(this.FViewScale*this.ViewResolution, this.FViewScale*this.ViewResolution);
@@ -408,6 +370,8 @@ TGLBase.prototype = {
         this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A02, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A12);
     },
     BeginLocal: function() { //开始在局部空间绘图
+      console.log("local space");
+
         this.FMat2D.Identity();
         this.FMat2D.Transform(1, 0, 0, -1, this.FViewCenter.X, this.FViewCenter.Y); //this.Canvas.transform(1,0,0,-1,FViewCenter.X,FViewCenter.Y);
         this.FMat2D.Scale(this.FViewScale * this.ViewResolution, this.FViewScale * this.ViewResolution); //this.Canvas.scale(this.FViewScale*this.ViewResolution, this.FViewScale*this.ViewResolution);
@@ -418,6 +382,8 @@ TGLBase.prototype = {
         this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A02, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A12);
     },
     BeginMap: function() { //开始在地图空间绘图
+      console.log("map space");
+
         this.FMat2D.Identity();
         this.FMat2D.Transform(1, 0, 0, -1, this.FViewCenter.X, this.FViewCenter.Y); //this.Canvas.transform(1,0,0,-1,FViewCenter.X,FViewCenter.Y);
         this.FMat2D.Scale(this.FViewScale * this.ViewResolution, this.FViewScale * this.ViewResolution); //this.Canvas.scale(this.FViewScale*this.ViewResolution, this.FViewScale*this.ViewResolution);
@@ -427,6 +393,8 @@ TGLBase.prototype = {
     },
 
     BeginView: function() { //开始在视图空间绘图
+      console.log("View space");
+
         this.FMat2D.Identity();
         this.FMat2D.Transform(1, 0, 0, -1, this.FViewCenter.X, this.FViewCenter.Y); //this.Canvas.transform(1,0,0,-1,FViewCenter.X,FViewCenter.Y);
 
@@ -434,6 +402,8 @@ TGLBase.prototype = {
         this.Canvas.setTransform(this.FMat2D.A00, this.FMat2D.A02, this.FMat2D.A01, this.FMat2D.A10, this.FMat2D.A11, this.FMat2D.A12);
     },
     BeginWin: function() {
+      console.log("win space");
+
         this.FMat2D.Identity();
         this.Canvas.setTransform(1, 0, 0, 1, 0, 0);
     }, //开始在窗口空间绘图

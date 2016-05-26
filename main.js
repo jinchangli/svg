@@ -45,16 +45,33 @@ $(function() {
     }
 
     operationForDot.OnMouseCapture = function(position) {
-        var min = 10000000000;
+        var min = 3;
         var nearsetPosition;
+        var path = state.getSelectedPath();
 
-        $.each(this.FGLView.Points, function(index, ele) {
-            var distance = ele.sub(position).abs();
-            if (distance <= 3 && distance < min) {
-                min = distance;
-                nearsetPosition = ele;
+        if (!path) {
+            var isoLines = this.FGLView.FGLBase.ISOLines;
+            for (var lineIndex = 0; lineIndex < isoLines.length; lineIndex++) {
+                var line = isoLines[lineIndex];
+                var points = line.isoLine;
+                if (!points) {
+                    continue;
+                }
+
+                var result = getNearestPointOnPath(points, min, position);
+                if (result) {
+                    nearsetPosition = result.position;
+                    min = result.distance;
+                }
             }
-        });
+        } else {
+            var points = path.isoLine;
+            var result = getNearestPointOnPath(points, 3, position);
+            if (result) {
+                nearsetPosition = result.position;
+                min = result.distance;
+            }
+        }
 
         return nearsetPosition;
     }
@@ -96,6 +113,20 @@ $(function() {
         view.WMMouseMove(event, x, y);
     });
 
+    //放大
+    $(".zoomin").mousemove(function(event) {
+
+    });
+
+    //缩小
+    $(".zoomout").mousemove(function(event) {
+        var y = event.offsetY;
+        var x = event.offsetX;
+        view.WMMouseMove(event, x, y);
+    });
+
+
+
     $(".save").click(function() {
         var pngUrl = $("#canvas")[0].toDataURL('image/png');
         if ($(".download").length > 0) {
@@ -113,17 +144,24 @@ $(function() {
         dataType: "json"
     }).done(function(data) {
         if (data) {
-          originalData = data;
+            originalData = data;
             bound = utility.GenBoundBox(data.isoLines);
             view.ModelBound(bound);
             view.ZoomViewExtent();
+          //  view.FGLBase.BeginLocal();
 
-            view.Paint();
-          //  view.FGLBase.GLRegions(data.isoLines);
-            view.FGLBase.GLNotesMasks(data.notes, 32, 1,1);
-          //  view.FGLBase.GLISOLines(data.isoLines);
-            //view.FGLBase.GLNotes(data.notes, 1,1,32,"serif");
+            view.FGLBase.GLRegions(data.isoLines);
 
+            ctx.save();
+            view.FGLBase.GLNotesMasks(data.notes, 32, "serif", 1, 1);
+            view.FGLBase.GLISOLines(data.isoLines);
+            ctx.restore();
+
+            view.FGLBase.GLNotes(data.notes, 1, 1, 32, "serif");
+
+
+            // ctx.fillStyle  = "green";
+            // ctx.fillRect(0,0, 800,500);
         }
     }).fail(function(message) {
         console.log(message);

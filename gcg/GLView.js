@@ -325,7 +325,8 @@ TGLView.prototype = {
             x: x,
             y: y
         };
-        var mouse_position = this.ScreenToView(point);
+
+        var mouse_position = TPosition2D(x,y); //this.ScreenToView(point);
 
         if (this.AllowCapture && this.FEnableCapture && this.FMouseOperation) {
             this.FCapturedFlag = false;
