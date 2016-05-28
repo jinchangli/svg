@@ -32,10 +32,12 @@ TGLView.prototype = {
     MouseMoveModelPosition: null,
     MinMove: null,
 
-    Points: null,
+    LayerCtx: null,
+    SelectedPoints: null,
 
     constructor: function(canvas) {
         with(this) {
+            PointsWithMarks = [];
             Canvas = canvas;
             FGLBase = new TGLBase(canvas, this);
             MouseDownPosition = TPosition2D();
@@ -61,11 +63,20 @@ TGLView.prototype = {
             FViewChanged = false;
             AllowCapture = false;
 
-            Points = [];
+            SelectedPoints = [];
+
         }
+
+        this.CreateLayer();
     },
     destruction: function(params) {
         this.FGLBase = null;
+    },
+    CreateLayer: function() {
+        var ctx = this.Canvas;
+
+        var newCanvas = $('<canvas class="clayer" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter($(ctx.canvas));
+        this.LayerCtx = newCanvas[0].getContext("2d");
     },
 
     //事件
@@ -316,16 +327,12 @@ TGLView.prototype = {
     },
 
     GenCapturePosition: function(keys, x, y) {
+        // (x, y) is in screen space
         if (this.FCapturedFlag) {
             this.DrawCapturedPoint();
         }
 
-        var point = {
-            x: x,
-            y: y
-        };
-
-        var mouse_position = this.ScreenToView(point);
+        var mouse_position = TPosition2D(x, y); //this.ScreenToView(point);
 
         if (this.AllowCapture && this.FEnableCapture && this.FMouseOperation) {
             this.FCapturedFlag = false;
@@ -353,24 +360,79 @@ TGLView.prototype = {
             y = this.FCapturedPosition.Y;
         }
 
-        var p = {
-            x: x,
-            y: y
-        };
+        // 如果这个点已经处于单击选中状态， 那么就忽略hover状态
+        if (this.IsPointSelected(TPosition2D(x, y))) {
+            return;
+        }
+
+        this.ToggleHighLightPoint(x, y);
+    },
+
+    ToggleHighLightPoint: function(X, Y, show) {
         //var rop2 = this.SetROP2(dc, R2_XORPEN);
-        var ctx = this.Canvas;
+        var ctx = this.LayerCtx;
         ctx.save();
-        this.Canvas.globalCompositeOperation = "xor";
+
+        ctx.globalCompositeOperation = "xor";
         //var pen = this.SelectObject(dc, CreatePen(PS_SOLID, 0, 0x00FF0000)); //TBD HPEN
         ctx.beginPath();
-        ctx.rect(p.x - 2, p.y - 2, 5, 5);
-        ctx.fill();
+        // ctx.rect(p.x - 2, p.y - 2, 5, 5);
+        // ctx.fill();
         //ctx.closePath();
-        ctx.rect(p.x - 4, p.y - 4, 9, 9);
+        ctx.fillStyle = "red";
+        ctx.rect(X - 4, Y - 4, 9, 9);
         ctx.fill();
 
         ctx.restore();
         //this.DeleteObject(SelectObject(pen));
+    },
+
+    DrawSelectedPoint: function(screenPosition) {
+        this.FCapturedFlag = false;
+        if (this.IsPointSelected(screenPosition)) {
+
+        } else {
+            this.DrawCapturedPoint(screenPosition.X, screenPosition.Y);
+            this.SelectedPoints.push(screenPosition);
+        }
+    },
+
+    UnDrawSelectedPoint: function(screenPosition) {
+        if (this.SelectedPoints == null || this.SelectedPoints.length == 0) {
+            return;
+        }
+
+        var points = [screenPosition];
+        if (screenPosition instanceof Array) {
+            points = screenPosition;
+        }
+
+        for (var i = 0; i < points.length; i++) {
+            var point = points[i];
+            var selectedIndex = this.IsPointSelected(screenPosition);
+            if (selectedIndex) {
+                this.ToggleHighLightPoint(point.X, point.Y);
+                selectedIndex--;
+                this.SelectedPoints = this.SelectedPoints.splice(selectedIndex, 1);
+            }
+        }
+    },
+
+    IsPointSelected: function(screenPosition) {
+       var result = 0;
+        if (this.SelectedPoints == null || this.SelectedPoints.length == 0) {
+            return false;
+        }
+
+        for (var i = 0; i < this.SelectedPoints.length; i++) {
+            var point = this.SelectedPoints[i];
+            if (point.X == screenPosition.X && point.Y == screenPosition.Y) {
+                result = i+1;
+                break;
+            }
+        }
+
+        return result;
     },
 
     ProcessMouseDown0: function(event, position) {
@@ -548,8 +610,8 @@ TGLView.prototype = {
     WMMouseDown: function(keys, x, y) {
         if (!this.FDoubleClicked) {
             var point = {
-                x: x,
-                y: y
+                X: x,
+                Y: y
             };
 
             if (this.ProcessMouseDown0(keys, this.ScreenToView(point))) {
@@ -565,8 +627,8 @@ TGLView.prototype = {
 
     WMMouseMove: function(keys, x, y) {
         var point = {
-            x: x,
-            y: y
+            X: x,
+            Y: y
         };
         var position = (this.ScreenToView(point));
         //  var dc = GetDC(Handle);
@@ -585,8 +647,8 @@ TGLView.prototype = {
     },
     WMMouseUp: function(keys, x, y) {
         var point = {
-            x: x,
-            y: y
+            X: x,
+            Y: y
         };
 
         if (this.ProcessMouseUp0(keys, this.ScreenToView(point))) {
@@ -697,18 +759,18 @@ TGLView.prototype = {
                 this.DrawCapturedPoint();
         }
     },
-//    DrawViewOnPaint: function() {
-//        var ps = PAINTSTRUCT();
-//        var dc = BeginPaint(Handle, ps);
-//        SetBkColor(dc, Color);
-//        this.DrawView(dc);
-//        EndPaint(Handle, ps);
-//    },
-//    DrawViewDirectly: function() {
-//        var dc = GetDC(Handle);
-//        this.DrawView(dc);
-//        ReleaseDC(Handle, dc);
-//    },
+    //    DrawViewOnPaint: function() {
+    //        var ps = PAINTSTRUCT();
+    //        var dc = BeginPaint(Handle, ps);
+    //        SetBkColor(dc, Color);
+    //        this.DrawView(dc);
+    //        EndPaint(Handle, ps);
+    //    },
+    //    DrawViewDirectly: function() {
+    //        var dc = GetDC(Handle);
+    //        this.DrawView(dc);
+    //        ReleaseDC(Handle, dc);
+    //    },
     OnMessage: function(msg, wparam, lparam) {
         //       switch (msg) {
         //           case WM_PAINT:

@@ -42,9 +42,9 @@ $(function() {
             var lineIndex = nearestPosition.lineIndex;
             state.setSelectedPath(originalData.isoLines[lineIndex]);
 
-
             // 将当前最近点置于选中状态
             view.DrawCapturedPoint(nearestPosition.X, nearestPosition.Y);
+            view.DrawSelectedPoint(nearestPosition);
         }
     }
 
@@ -56,8 +56,8 @@ $(function() {
         //  console.log("mouse move with " + downflag);
     }
 
-    operationForDot.OnMouseCapture = function(position) {
-        position = view.FGLBase.ViewToLocal(position);
+    operationForDot.OnMouseCapture = function(screenPosition) {
+        var position = view.FGLBase.ScreenToLocal(screenPosition);
         var min = view.FGLBase.ViewToModel_Vector(TVector2D(3,3)).X;
         var nearestPosition;
         var path = state.getSelectedPath();
@@ -87,6 +87,10 @@ $(function() {
             }
         }
 
+        if(nearestPosition){
+          nearestPosition = view.FGLBase.LocalToScreen(nearestPosition);
+        }
+
         return nearestPosition;
     }
 
@@ -109,19 +113,19 @@ $(function() {
         view.WMKeyUp(event.which);
     });
 
-    $("#canvas").mousedown(function(event) {
+    $("canvas").mousedown(function(event) {
         var y = event.offsetY;
         var x = event.offsetX;
         view.WMMouseDown(event, x, y);
     });
 
-    $("#canvas").mouseup(function(event) {
+    $("canvas").mouseup(function(event) {
         var y = event.offsetY;
         var x = event.offsetX;
         view.WMMouseUp(event, x, y);
     });
 
-    $("#canvas").mousemove(function(event) {
+    $("canvas").mousemove(function(event) {
         var y = event.offsetY;
         var x = event.offsetX;
         view.WMMouseMove(event, x, y);

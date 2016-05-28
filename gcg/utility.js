@@ -15,7 +15,7 @@ var utility = {
             }
 
             for (var pointIndex = 1; pointIndex < line.length; pointIndex++) {
-                bound2D.SetBound(line[pointIndex].x, line[pointIndex].y);
+                bound2D.SetBound(line[pointIndex].X, line[pointIndex].Y);
             }
         }
 
@@ -90,7 +90,7 @@ var getNearestPointOnPath = function(points, min, target) {
             continue;
         }
 
-        var pointCoor = TPosition2D(point.x, point.y);
+        var pointCoor = TPosition2D(point.X, point.Y);
         var distance = pointCoor.sub(target).abs();
         if (distance < min) {
             min = distance;

@@ -26,9 +26,16 @@
   outline-offset: -2px;
 }
 
-#canvas{
+.canvasContainer{
+  position: relative;
+}
+
+.canvasContainer>canvas{
   /*height: 500px;
   width: 800px;*/
   border: 1px solid black;
   margin-left: 50px;
+  position:absolute;
+  left: 0;
+  top: 0;
 }
