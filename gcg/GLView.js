@@ -78,7 +78,15 @@ TGLView.prototype = {
         var newCanvas = $('<canvas class="clayer" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter($(ctx.canvas));
         this.LayerCtx = newCanvas[0].getContext("2d");
     },
+    ClearView:function() {
+      var ctx = this.Canvas;
+      var size = ctx.canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, size.width, size.height);
 
+      this.LayerCtx.clearRect(0, 0, size.width, size.height);
+
+      this.SelectedPoints = [];
+    },
     //事件
     OnInitializeView: null, //OnInitializeView
     OnMousePosition: null, //OnMousePosition(position)
@@ -327,10 +335,10 @@ TGLView.prototype = {
     },
 
     GenCapturePosition: function(keys, x, y) {
-        // (x, y) is in screen space
-        if (this.FCapturedFlag) {
-            this.DrawCapturedPoint();
-        }
+        // // (x, y) is in screen space
+        // if (this.FCapturedFlag) {
+        //     this.DrawCapturedPoint();
+        // }
 
         var mouse_position = TPosition2D(x, y); //this.ScreenToView(point);
 
@@ -343,12 +351,24 @@ TGLView.prototype = {
             }
 
             if (captured_position) {
-                this.FCapturedPosition = mouse_position = captured_position;
+                if (this.FCapturedPosition != null && captured_position.X == this.FCapturedPosition.X && captured_position.Y == this.FCapturedPosition.Y) {
+
+                } else {
+                    console.log("更新FCapturedPosition");
+                    if (this.FCapturedPosition)
+                        console.log("FCapturedPosition:" + this.FCapturedPosition.X + " " + this.FCapturedPosition.Y);
+                    console.log("captured_position:" + captured_position.X + " " + captured_position.Y);
+                    this.FCapturedPosition = mouse_position = captured_position;
+                    this.DrawCapturedPoint();
+                }
                 this.FCapturedFlag = true;
+            } else {
+                if (this.FCapturedPosition) {
+                    this.ClearHoverPoint();
+                }
             }
         }
-        if (this.FCapturedFlag)
-            this.DrawCapturedPoint();
+
         return mouse_position;
     },
     DrawCapturedPoint: function(x, y) {
@@ -361,15 +381,42 @@ TGLView.prototype = {
         }
 
         // 如果这个点已经处于单击选中状态， 那么就忽略hover状态
-        if (this.IsPointSelected(TPosition2D(x, y))) {
+        var index = this.IsPointSelected(TPosition2D(x, y));
+        if (index != null) {
+            return;
+        }
+        console.log("设置hover " + x + "," + y);
+        this.SetHighLightPoint(x, y);
+    },
+    ClearHoverPoint: function(x, y) {
+        if ((x == undefined || x == null) && (y == undefined || y == null)) {
+            if (this.FCapturedPosition) {
+                x = this.FCapturedPosition.X;
+                y = this.FCapturedPosition.Y;
+            }
+        }
+
+        // 如果这个点已经处于单击选中状态， 那么就忽略hover状态
+        var index = this.IsPointSelected(TPosition2D(x, y));
+        if (index != null) {
             return;
         }
 
-        this.ToggleHighLightPoint(x, y);
-    },
+        console.log("清空hover " + x + "," + y);
 
-    ToggleHighLightPoint: function(X, Y, show) {
+        this.FCapturedFlag = false;
+        this.FCapturedPosition = null;
+        this.ClearHighLightPoint(x, y);
+    },
+    ToggleHighLightPoint: function(X, Y, color, show) {
         //var rop2 = this.SetROP2(dc, R2_XORPEN);
+        var localP = TPosition2D(X, Y);
+        localP = view.FGLBase.LocalToScreen(localP);
+
+        if (!color) {
+            color = "red";
+        }
+
         var ctx = this.LayerCtx;
         ctx.save();
 
@@ -379,55 +426,90 @@ TGLView.prototype = {
         // ctx.rect(p.x - 2, p.y - 2, 5, 5);
         // ctx.fill();
         //ctx.closePath();
-        ctx.fillStyle = "red";
-        ctx.rect(X - 4, Y - 4, 9, 9);
+        ctx.fillStyle = color;
+        ctx.rect(localP.X - 4, localP.Y - 4, 9, 9);
         ctx.fill();
 
         ctx.restore();
         //this.DeleteObject(SelectObject(pen));
     },
+    SetHighLightPoint: function(X, Y, color) {
+      var localP = TPosition2D(X, Y);
+      localP = view.FGLBase.LocalToScreen(localP);
+       if(!color)
+       {
+         color = "red";
+       }
+        var ctx = this.LayerCtx;
+        //var pen = this.SelectObject(dc, CreatePen(PS_SOLID, 0, 0x00FF0000)); //TBD HPEN
+        ctx.beginPath();
+        // ctx.rect(p.x - 2, p.y - 2, 5, 5);
+        // ctx.fill();
+        //ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.rect(localP.X - 4, localP.Y - 4, 9, 9);
+        ctx.fill();
+    },
 
-    DrawSelectedPoint: function(screenPosition) {
+    ClearHighLightPoint: function(X, Y) {
+      var localP = TPosition2D(X, Y);
+      localP = view.FGLBase.LocalToScreen(localP);
+
+        var ctx = this.LayerCtx;
+        ctx.clearRect(localP.X - 4, localP.Y - 4, 9, 9);
+    },
+
+    DrawSelectedPoint: function(localP) {
         this.FCapturedFlag = false;
-        if (this.IsPointSelected(screenPosition)) {
+        var index = this.IsPointSelected(localP);
+        if (index != null) {
 
         } else {
-            this.DrawCapturedPoint(screenPosition.X, screenPosition.Y);
-            this.SelectedPoints.push(screenPosition);
+            this.SetHighLightPoint(localP.X, localP.Y, "blue");
+            this.SelectedPoints.push(localP);
         }
     },
 
-    UnDrawSelectedPoint: function(screenPosition) {
+    UnDrawSelectedPoint: function(localP) {
         if (this.SelectedPoints == null || this.SelectedPoints.length == 0) {
             return;
         }
 
-        var points = [screenPosition];
-        if (screenPosition instanceof Array) {
-            points = screenPosition;
+        var points = [localP];
+        if (localP instanceof Array) {
+            points = localP;
         }
 
         for (var i = 0; i < points.length; i++) {
             var point = points[i];
-            var selectedIndex = this.IsPointSelected(screenPosition);
-            if (selectedIndex) {
-                this.ToggleHighLightPoint(point.X, point.Y);
-                selectedIndex--;
-                this.SelectedPoints = this.SelectedPoints.splice(selectedIndex, 1);
+            var selectedIndex = this.IsPointSelected(localP);
+            if (selectedIndex != null) {
+                this.ClearHighLightPoint(point.X, point.Y);
+
+                this.SelectedPoints.splice(selectedIndex, 1);
             }
         }
     },
+    UnDrawAllPoints: function() {
+        var points = this.SelectedPoints;
 
-    IsPointSelected: function(screenPosition) {
-       var result = 0;
+        for (var i = 0; i < points.length; i++) {
+            var point = points[i];
+            this.ClearHighLightPoint(point.X, point.Y);
+        }
+
+        this.SelectedPoints = [];
+    },
+    IsPointSelected: function(localP) {
+        var result = null;
         if (this.SelectedPoints == null || this.SelectedPoints.length == 0) {
-            return false;
+            return result;
         }
 
         for (var i = 0; i < this.SelectedPoints.length; i++) {
             var point = this.SelectedPoints[i];
-            if (point.X == screenPosition.X && point.Y == screenPosition.Y) {
-                result = i+1;
+            if (point.X == localP.X && point.Y == localP.Y) {
+                result = i;
                 break;
             }
         }
@@ -435,6 +517,18 @@ TGLView.prototype = {
         return result;
     },
 
+    HasSelectedPoint: function() {
+        return this.SelectedPoints != null && this.SelectedPoints.length > 0;
+    },
+    GetLastSelectedPoint: function() {
+        var result = null;
+        if (this.SelectedPoints == null || this.SelectedPoints.length == 0) {
+            return result;
+        }
+
+        result = this.SelectedPoints[this.SelectedPoints.length - 1];
+        return result;
+    },
     ProcessMouseDown0: function(event, position) {
         var flags = GetMouseKeys(event);
         if (!this.FMouseLeftButtonDown && !this.FMouseMiddleButtonDown && !this.FMouseRightButtonDown) {
@@ -609,13 +703,11 @@ TGLView.prototype = {
 
     WMMouseDown: function(keys, x, y) {
         if (!this.FDoubleClicked) {
-            var point = {
-                X: x,
-                Y: y
-            };
+            var position = TPosition2D(x, y);
+            position = this.FGLBase.ScreenToLocal(position);
 
-            if (this.ProcessMouseDown0(keys, this.ScreenToView(point))) {
-                this.ProcessMouseDown(keys, this.GenCapturePosition(keys, x, y));
+            if (this.ProcessMouseDown0(keys, position)) {
+                this.ProcessMouseDown(keys, this.GenCapturePosition(keys, position.X, position.Y));
                 if (this.FMouseOperation && this.FMouseLeftButtonDown && this.FMouseOperation.Paint2NeedDown)
                     this.FMouseOperation.Paint2();
             }
@@ -626,17 +718,15 @@ TGLView.prototype = {
     },
 
     WMMouseMove: function(keys, x, y) {
-        var point = {
-            X: x,
-            Y: y
-        };
-        var position = (this.ScreenToView(point));
+        var position = TPosition2D(x, y);
+        position = this.FGLBase.ScreenToLocal(position);
+
         //  var dc = GetDC(Handle);
         if (this.ProcessMouseMove0(keys, position)) {
             if (this.FMouseOperation && (!this.FMouseOperation.Paint2NeedDown || this.FMouseLeftButtonDown))
                 this.FMouseOperation.Paint2();
             this.Paint2();
-            position = this.GenCapturePosition(keys, x, y);
+            position = this.GenCapturePosition(keys, position.X, position.Y);
             this.ProcessMouseMove(keys, position);
             this.Paint2();
             if (this.FMouseOperation && (!this.FMouseOperation.Paint2NeedDown || this.FMouseLeftButtonDown))
@@ -646,15 +736,13 @@ TGLView.prototype = {
         this.MousePosition(position);
     },
     WMMouseUp: function(keys, x, y) {
-        var point = {
-            X: x,
-            Y: y
-        };
+        var position = TPosition2D(x, y);
+        position = this.FGLBase.ScreenToLocal(position);
 
-        if (this.ProcessMouseUp0(keys, this.ScreenToView(point))) {
+        if (this.ProcessMouseUp0(keys, position)) {
             if (this.FMouseOperation && this.FMouseLeftButtonDown && this.FMouseOperation.Paint2NeedDown())
                 this.FMouseOperation.Paint2();
-            this.ProcessMouseUp(keys, this.GenCapturePosition(keys, x, y));
+            this.ProcessMouseUp(keys, this.GenCapturePosition(keys, position.X, position.Y));
         }
         //  this.ReleaseDC(Handle, dc);
         this.FDoubleClicked = false;
