@@ -39,8 +39,10 @@ $(function() {
 
         //如果存在最短距离点， 就将当前的等值线设为选定的等值线
         if (nearestPosition) {
+          if(nearestPosition.lineIndex>=0){ // means a new line is selected
             var lineIndex = nearestPosition.lineIndex;
             state.setSelectedPath(originalData.isoLines[lineIndex]);
+          }
 
             // 将当前最近点置于选中状态
             view.DrawCapturedPoint(nearestPosition.X, nearestPosition.Y);
@@ -88,7 +90,9 @@ $(function() {
         }
 
         if(nearestPosition){
+          var lineIndex = nearestPosition.lineIndex;
           nearestPosition = view.FGLBase.LocalToScreen(nearestPosition);
+          nearestPosition.lineIndex = lineIndex;
         }
 
         return nearestPosition;
