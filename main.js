@@ -14,9 +14,6 @@ $(function() {
 
         view.ClearView();
 
-        var bound = utility.GenBoundBox(data.isoLines);
-        view.ModelBound(bound);
-        view.ZoomViewExtent();
         view.FGLBase.BeginLocal();
 
         view.FGLBase.GLRegions(data.isoLines);
@@ -28,7 +25,7 @@ $(function() {
 
         view.FGLBase.GLNotes(data.notes, 1, 1, 32, "serif");
 
-        view.FGLBase.EndView();
+        view.FGLBase.EndLocal();
     }
 
     var operationForDot = new TGLOperation(view);
@@ -192,31 +189,51 @@ $(function() {
     });
 
     $("canvas").mousedown(function(event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
         var y = event.offsetY;
         var x = event.offsetX;
         view.WMMouseDown(event, x, y);
     });
 
     $("canvas").mouseup(function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
         var y = event.offsetY;
         var x = event.offsetX;
         view.WMMouseUp(event, x, y);
     });
 
+    $("canvas").click(function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+    });
+
+
     $("canvas").mousemove(function(event) {
         var y = event.offsetY;
         var x = event.offsetX;
+
         view.WMMouseMove(event, x, y);
     });
 
     //放大
     $(".zoomin").click(function(event) {
         view.ZoomViewIn();
+        view.Paint();
     });
 
     //缩小
     $(".zoomout").click(function(event) {
         view.ZoomViewOut();
+        view.Paint();
+    });
+
+    $(".zoomextent").click(function(event) {
+        view.ZoomViewExtent();
+        view.Paint();
     });
 
     $(".smooth").click(function(event) {
@@ -243,7 +260,7 @@ $(function() {
                 newPoints.push(newPoint);
             }
 
-           path.isoLine = newPoints;
+            path.isoLine = newPoints;
         }
 
         view.Paint();
@@ -275,6 +292,9 @@ $(function() {
         if (data) {
             originalData = data;
             state.viewData = clone(data);
+            var bound = utility.GenBoundBox(data.isoLines);
+            view.ModelBound(bound);
+            view.ZoomViewExtent();
             view.Paint();
         }
     }).fail(function(message) {

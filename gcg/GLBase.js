@@ -28,6 +28,7 @@ TGLBase.prototype = {
         this.FGLView = view;
         this.FViewRect = new TRect();
         this.FViewCenter = TPosition2D();
+        this.FModelCenter = TPosition2D();
         this.FStdToView = TVector2D();
         var rct = new TRect();
         rct.left = 0;
@@ -38,8 +39,8 @@ TGLBase.prototype = {
 
         this.ViewResolution = 96 / 0.0254;
         this.FMat2D = TMatrix2D();
-        this.FMinZoom = 1E7;
-        this.FMaxZoom = 1E-7;
+        this.FMinZoom = 1E-7;
+        this.FMaxZoom = 1E7;
         this.FMapBound = TBound2D();
         this.FMapCenter = TPosition2D();
         this.FModelBound = TBound2D();
@@ -89,6 +90,7 @@ TGLBase.prototype = {
             this.FViewCenter.Y = (this.FViewRect.bottom + this.FViewRect.top) * 0.5;
             this.FStdToView.X = (this.FViewRect.right - this.FViewRect.left) / 2.0;
             this.FStdToView.Y = (this.FViewRect.bottom - this.FViewRect.top) / 2.0;
+            this.FModelCenter =   this.FViewCenter;
         }
     },
     ViewSize: function() {
@@ -429,9 +431,9 @@ TGLBase.prototype = {
     // 移动视图
     Move: function() {
         if (arguments.length == 1) {
-            return DoMove(arguments[0]);
+            return this.DoMove(arguments[0]);
         } else if (arguments.length == 2) {
-            return DoMove(arguments[1].sub(arguments[0]));
+            return this.DoMove(arguments[1].sub(arguments[0]));
         }
     },
 
@@ -590,6 +592,7 @@ TGLBase.prototype = {
                 p = TPosition2D(),
                 v = TVector2D();
             if (this.ViewToLocal(p0, move, p, v)) {
+
                 this.FModelCenter.Sub(v);
                 return true;
             }

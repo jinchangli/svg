@@ -20,12 +20,14 @@
     <script src="main.js"></script>
 </head>
 
-<body>
+<body oncontextmenu="return false;">
   <div id="operationButtons">
+    <button type="button" class="zoomextent btn btn-primary" aria-haspopup="true" aria-expanded="false">满屏</button>
+    <button type="button" class="zoomin btn btn-primary" aria-haspopup="true" aria-expanded="false">放大</button>
+    <button type="button" class="zoomout btn btn-primary" aria-haspopup="true" aria-expanded="false">缩小</button>
+    <button type="button" class="moveView btn btn-primary" aria-haspopup="true" aria-expanded="false">移屏</button>
     <button type="button" class="smooth btn btn-primary" aria-haspopup="true" aria-expanded="false"> 平滑曲线 </button>
     <button type="button" class="cutPath btn btn-primary" aria-haspopup="true" aria-expanded="false">重画曲线</button>
-      <button type="button" class="zoomin btn btn-primary" aria-haspopup="true" aria-expanded="false">放大</button>
-        <button type="button" class="zoomout btn btn-primary" aria-haspopup="true" aria-expanded="false">缩小</button>
     <button type="button" class="save btn btn-primary" aria-haspopup="true" aria-expanded="false">保存</button>
 
   </div>

@@ -23,6 +23,9 @@ var utility = {
     }
 }
 
+var Abs = function() {
+    return Math.abs.apply(Math, arguments);
+}
 
 var GetMouseKeys = function(event) {
     var obj = {

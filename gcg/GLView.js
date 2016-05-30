@@ -78,14 +78,14 @@ TGLView.prototype = {
         var newCanvas = $('<canvas class="clayer" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter($(ctx.canvas));
         this.LayerCtx = newCanvas[0].getContext("2d");
     },
-    ClearView:function() {
-      var ctx = this.Canvas;
-      var size = ctx.canvas.getBoundingClientRect();
-      ctx.clearRect(0, 0, size.width, size.height);
+    ClearView: function() {
+        var ctx = this.Canvas;
+        var size = ctx.canvas.getBoundingClientRect();
+        ctx.clearRect(0, 0, size.width, size.height);
 
-      this.LayerCtx.clearRect(0, 0, size.width, size.height);
+        this.LayerCtx.clearRect(0, 0, size.width, size.height);
 
-      this.SelectedPoints = [];
+        this.SelectedPoints = [];
     },
     //事件
     OnInitializeView: null, //OnInitializeView
@@ -240,29 +240,29 @@ TGLView.prototype = {
             this.FMouseOperation.MouseCommand(command, state);
     },
 
-    MoveViewMouseMove: function(dc, keys, position, downflag) {
+    MoveViewMouseMove: function(keys, position, downflag) {
         if (downflag)
             this.ProcessMoveView(this.MouseMovePosition, position);
     },
-    ZoomInMouseUp: function(dc, keys, position) {
+    ZoomInMouseUp: function(keys, position) {
         if (this.FGLBase && this.FGLBase.ZoomIn(center)) {
             this.ViewChanged(true);
             this.Invalidate();
         }
         this.ViewZoomed();
     },
-    ZoomOutMouseUp: function(dc, keys, position) {
+    ZoomOutMouseUp: function(keys, position) {
         if (this.FGLBase && this.FGLBase.ZoomOut(position)) {
             this.ViewChanged(true);
             this.Invalidate();
         }
         this.ViewZoomed();
     },
-    ZoomRectMouseUp: function(dc, keys, position) {
+    ZoomRectMouseUp: function(keys, position) {
         if (position.sub(this.MouseDownPosition).abs() >= 10)
             this.ZoomViewRect(this.TInterval2D(this.MouseDownPosition, position));
     },
-    ZoomViewMouseMove: function(dc, keys, position, downflag) {
+    ZoomViewMouseMove: function(keys, position, downflag) {
         if (downflag)
             this.ProcessZoomView(this.MouseMovePosition, position);
     },
@@ -314,8 +314,10 @@ TGLView.prototype = {
         if (arguments.length <= 2) {
             flag = false;
         }
-        if (from != to)
+        if (from != to) {
             this.MoveView(flag ? from.add(to).mul(0.5) : from, to); // TBD: TPosition2D, add, divide
+            this.Paint();
+        }
     },
 
     BeginTemporaryOperation: function() {
@@ -330,8 +332,10 @@ TGLView.prototype = {
 
     ProcessZoomView: function(from, to) {
         var d = to.Y - from.Y;
-        if (d !== 0)
+        if (d !== 0) {
             this.ZoomView(Exp(d / (flag ? 200 : 100)));
+            this.Paint();
+        }
     },
 
     GenCapturePosition: function(keys, x, y) {
@@ -434,12 +438,11 @@ TGLView.prototype = {
         //this.DeleteObject(SelectObject(pen));
     },
     SetHighLightPoint: function(X, Y, color) {
-      var localP = TPosition2D(X, Y);
-      localP = view.FGLBase.LocalToScreen(localP);
-       if(!color)
-       {
-         color = "red";
-       }
+        var localP = TPosition2D(X, Y);
+        localP = view.FGLBase.LocalToScreen(localP);
+        if (!color) {
+            color = "red";
+        }
         var ctx = this.LayerCtx;
         //var pen = this.SelectObject(dc, CreatePen(PS_SOLID, 0, 0x00FF0000)); //TBD HPEN
         ctx.beginPath();
@@ -452,8 +455,8 @@ TGLView.prototype = {
     },
 
     ClearHighLightPoint: function(X, Y) {
-      var localP = TPosition2D(X, Y);
-      localP = view.FGLBase.LocalToScreen(localP);
+        var localP = TPosition2D(X, Y);
+        localP = view.FGLBase.LocalToScreen(localP);
 
         var ctx = this.LayerCtx;
         ctx.clearRect(localP.X - 4, localP.Y - 4, 9, 9);
@@ -575,8 +578,12 @@ TGLView.prototype = {
         return false;
 
     },
-    ProcessMouseMove0: function(event, position) {
-        var flags = GetMouseKeys(event);
+    GetCursor: function() {
+
+    },
+    ProcessMouseMove0: function(keys, position) {
+        var flags = GetMouseKeys(keys);
+        console.log(flags.left);
         if (this.FMouseRightButtonDown) {
             if (!flags.left && !flags.middle) {
                 var flag = (flags.shift ? 1 : 0) + (flags.ctrl ? 2 : 0) + (flags.alt ? 4 : 0);
@@ -600,11 +607,13 @@ TGLView.prototype = {
                 this.ZoomViewMouseMove(keys, position, true);
             } else
                 return true;
-        } else
+        } else {
             return true;
+        }
+
         this.MouseMovePosition = position;
-        this.MouseMoveMapPosition = ViewToMap(MouseMovePosition);
-        this.MouseMoveModelPosition = MapToModel(MouseMoveMapPosition);
+        this.MouseMoveMapPosition = this.ViewToMap(this.MouseMovePosition);
+        this.MouseMoveModelPosition = this.MapToModel(this.MouseMoveMapPosition);
         return false;
 
     },
@@ -638,7 +647,7 @@ TGLView.prototype = {
                 this.FMouseLeftButtonDown = false;
                 return true;
             }
-            this.ReleaseCapture();
+          //  this.ReleaseCapture();
         }
         return false;
     },
@@ -704,9 +713,11 @@ TGLView.prototype = {
     WMMouseDown: function(keys, x, y) {
         if (!this.FDoubleClicked) {
             var position = TPosition2D(x, y);
+            var screenPoition = TPosition2D(x, y);
+
             position = this.FGLBase.ScreenToLocal(position);
 
-            if (this.ProcessMouseDown0(keys, position)) {
+            if (this.ProcessMouseDown0(keys, screenPoition)) {
                 this.ProcessMouseDown(keys, this.GenCapturePosition(keys, position.X, position.Y));
                 if (this.FMouseOperation && this.FMouseLeftButtonDown && this.FMouseOperation.Paint2NeedDown)
                     this.FMouseOperation.Paint2();
@@ -719,10 +730,11 @@ TGLView.prototype = {
 
     WMMouseMove: function(keys, x, y) {
         var position = TPosition2D(x, y);
-        position = this.FGLBase.ScreenToLocal(position);
+        var screenPoition = TPosition2D(x, y);
 
+        position = this.FGLBase.ScreenToLocal(position);
         //  var dc = GetDC(Handle);
-        if (this.ProcessMouseMove0(keys, position)) {
+        if (this.ProcessMouseMove0(keys, screenPoition)) {
             if (this.FMouseOperation && (!this.FMouseOperation.Paint2NeedDown || this.FMouseLeftButtonDown))
                 this.FMouseOperation.Paint2();
             this.Paint2();
