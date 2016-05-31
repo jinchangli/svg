@@ -57,33 +57,25 @@ $(function() {
                         return;
                     }
 
-                    var lastSelectedPoint = view.GetLastSelectedPoint();
+
                     var current = nearestPosition;
-                    var path = state.getSelectedPath();
-                    var points = path.isoLine;
+
+                    var points = clone(view.SelectedPoints);
 
                     var needSelect = false;
 
-                    for (var pointIndex = points.length * 2 - 1; pointIndex >= 0; pointIndex--) {
+                    for (var pointIndex = points.length - 1; pointIndex >= 0; pointIndex--) {
                         var point = points[pointIndex % points.length];
                         if (point.isBound) {
                             continue;
                         }
 
-                        if (!needSelect) {
-                            if (lastSelectedPoint.X == point.X && lastSelectedPoint.Y == point.Y) {
-                                view.UnDrawSelectedPoint(point);
-                                needSelect = true;
-                            }
-                        } else {
-                            view.UnDrawSelectedPoint(point);
-                            if (current.X == point.X && current.Y == point.Y) {
-                                break;
-                            }
+                        if (current.X == point.X && current.Y == point.Y) {
+                            break;
                         }
+
+                        view.UnDrawSelectedPoint(point);
                     }
-
-
                 } else {
                     //if the point was not selected, we need to add all the points between the selected ones and the new one to be selected
                     var lastSelectedPoint = view.GetLastSelectedPoint();
