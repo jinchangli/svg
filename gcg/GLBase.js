@@ -180,8 +180,8 @@ TGLBase.prototype = {
             ctx.restore();
         }
     },
-    GetColor: function() {
-        return "#" + Math.floor(Math.random() * 100) + "5f3d";
+    GetColor: function(value) {
+        return value<500? "#125F3D" :"#395F3D" ;
     },
 
     GLRegions: function(isoLines) {
@@ -588,15 +588,11 @@ TGLBase.prototype = {
     },
     DoMove: function(move) {
         if (!IsZero(move)) {
-            var p0 = TPosition2D(),
-                p = TPosition2D(),
-                v = TVector2D();
-            if (this.ViewToLocal(p0, move, p, v)) {
-
-                this.FModelCenter.Sub(v);
-                return true;
-            }
+          move.Y = -move.Y;
+          this.FMapCenter.Sub(this.ViewToMap_Vector(move));
+          return true;
         }
+
         return false;
     },
 
