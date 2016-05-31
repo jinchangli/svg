@@ -27,6 +27,10 @@ var Abs = function() {
     return Math.abs.apply(Math, arguments);
 }
 
+var Exp = function() {
+    return Math.exp.apply(Math, arguments);
+}
+
 var GetMouseKeys = function(event) {
     var obj = {
         left: null,

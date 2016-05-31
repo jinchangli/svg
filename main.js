@@ -189,8 +189,8 @@ $(function() {
     });
 
     $("canvas").mousedown(function(event) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
+        event.preventDefault();
+        event.stopImmediatePropagation();
 
         var y = event.offsetY;
         var x = event.offsetX;
@@ -215,6 +215,20 @@ $(function() {
     $("canvas").mousemove(function(event) {
         var y = event.offsetY;
         var x = event.offsetX;
+
+        // 以下处理是为兼容IE浏览器
+        event.which = 0;
+        switch (event.buttons) {
+            case 1:
+                event.which = 1;
+                break;
+            case 2:
+                event.which = 3;
+                break;
+            case 4:
+                event.which = 2;
+                break;
+        }
 
         view.WMMouseMove(event, x, y);
     });

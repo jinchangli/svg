@@ -264,7 +264,7 @@ TGLView.prototype = {
     },
     ZoomViewMouseMove: function(keys, position, downflag) {
         if (downflag)
-            this.ProcessZoomView(this.MouseMovePosition, position);
+            this.ProcessZoomView(this.MouseMovePosition, position, downflag);
     },
 
     MouseOperation0: function(operation) {
@@ -330,7 +330,7 @@ TGLView.prototype = {
         ////this.SetCursor(0);
     },
 
-    ProcessZoomView: function(from, to) {
+    ProcessZoomView: function(from, to, flag) {
         var d = to.Y - from.Y;
         if (d !== 0) {
             this.ZoomView(Exp(d / (flag ? 200 : 100)));
@@ -583,7 +583,7 @@ TGLView.prototype = {
     },
     ProcessMouseMove0: function(keys, position) {
         var flags = GetMouseKeys(keys);
-        console.log(flags.left);
+      //  console.log("flags.left ="+ flags.left);
         if (this.FMouseRightButtonDown) {
             if (!flags.left && !flags.middle) {
                 var flag = (flags.shift ? 1 : 0) + (flags.ctrl ? 2 : 0) + (flags.alt ? 4 : 0);
@@ -685,7 +685,7 @@ TGLView.prototype = {
     },
     ZoomView: function(position, scale) {
         if (arguments.length == 1) {
-            if (this.FGLBase && this.FGLBase.Zoom(this.TPosition2D(), scale)) {
+            if (this.FGLBase && this.FGLBase.Zoom(TPosition2D(), scale)) {
                 this.ViewChanged(true);
                 this.Invalidate();
             }
