@@ -19,11 +19,11 @@ $(function() {
         view.FGLBase.GLRegions(data.isoLines);
 
         ctx.save();
-        view.FGLBase.GLNotesMasks(data.notes, 32, "serif", 1, 1);
+        view.FGLBase.GLNotesMasks(data.isoLines, 32, "serif", 1, 1);
         view.FGLBase.GLISOLines(data.isoLines);
         ctx.restore();
 
-        view.FGLBase.GLNotes(data.notes, 1, 1, 32, "serif");
+        view.FGLBase.GLNotes(data.isoLines, 1, 1, 32, "serif");
 
         view.FGLBase.EndLocal();
     }
@@ -127,7 +127,7 @@ $(function() {
         var path = state.getSelectedPath();
 
         if (!path) {
-            var isoLines = this.FGLView.FGLBase.ISOLines;
+            var isoLines = state.viewData.isoLines;
             for (var lineIndex = 0; lineIndex < isoLines.length; lineIndex++) {
                 var line = isoLines[lineIndex];
                 var points = line.isoLine;
@@ -181,17 +181,17 @@ $(function() {
     });
 
     $("canvas").mousedown(function(event) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
+        // event.preventDefault();
+        // event.stopImmediatePropagation();
 
         var y = event.offsetY;
         var x = event.offsetX;
         view.WMMouseDown(event, x, y);
     });
 
-    $("canvas").mouseup(function(event) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
+    $(document).mouseup(function(event) {
+        // event.preventDefault();
+        // event.stopImmediatePropagation();
 
         var y = event.offsetY;
         var x = event.offsetX;
@@ -199,8 +199,8 @@ $(function() {
     });
 
     $("canvas").click(function(event) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
+        // event.preventDefault();
+        // event.stopImmediatePropagation();
     });
 
 
@@ -268,6 +268,8 @@ $(function() {
 
             path.isoLine = newPoints;
         }
+
+        calculateNotesPosition(path);
 
         view.Paint();
     });

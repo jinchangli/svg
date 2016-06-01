@@ -20,7 +20,7 @@
     <script src="main.js"></script>
 </head>
 
-<body oncontextmenu="return false;">
+<body>
   <div id="operationButtons">
     <button type="button" class="zoomextent btn btn-primary" aria-haspopup="true" aria-expanded="false">满屏</button>
     <button type="button" class="zoomin btn btn-primary" aria-haspopup="true" aria-expanded="false">放大</button>
@@ -37,7 +37,7 @@
     <!-- <svg id="gcgmap" height="560" width="960">
 
     </svg> -->
-    <div class="canvasContainer">
+    <div class="canvasContainer" oncontextmenu="return false;">
       <canvas id="canvas" width="800" height="500"></canvas>
     </div>
 

@@ -90,7 +90,7 @@ TGLBase.prototype = {
             this.FViewCenter.Y = (this.FViewRect.bottom + this.FViewRect.top) * 0.5;
             this.FStdToView.X = (this.FViewRect.right - this.FViewRect.left) / 2.0;
             this.FStdToView.Y = (this.FViewRect.bottom - this.FViewRect.top) / 2.0;
-            this.FModelCenter =   this.FViewCenter;
+            this.FModelCenter = this.FViewCenter;
         }
     },
     ViewSize: function() {
@@ -143,9 +143,9 @@ TGLBase.prototype = {
     }, //视图单位变换: 像素-->米
 
     //绘制标注
-    GLNotes: function(notes, wscale, hscale, fontSize, fontFamily) {
-        if (!notes || notes.length == 0) {
-            console.log("GLNotes, notes is empty");
+    GLNotes: function(isoLines, wscale, hscale, fontSize, fontFamily) {
+        if (!isoLines || isoLines.length == 0) {
+            console.log("GLNotes, isoLines is empty");
             return;
         }
 
@@ -159,29 +159,35 @@ TGLBase.prototype = {
 
         var ctx = this.Canvas;
         ctx.beginPath();
-        for (var i = 0; i < notes.length; i++) {
-            var note = notes[i];
-            var position = note.position;
-            var text = note.text;
-            var direction = note.direction;
+        for (var lIndex = 0; lIndex < isoLines.length; lIndex++) {
+            var isoLine = isoLines[lIndex];
+            var notes = isoLine.notes;
+            if (!notes || notes.length == 0) {
+                continue;
+            }
 
-            ctx.save();
+            for (var i = 0; i < notes.length; i++) {
+                var note = notes[i];
+                var position = note.position;
+                var text = note.note;
+                var direction = note.direction;
+                ctx.save();
+                ctx.font = fontSize + "px " + fontFamily;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.translate(position.X, position.Y);
+                ctx.scale(wscale, -hscale);
+                ctx.rotate(-direction);
 
-            ctx.font = fontSize + "px " + fontFamily;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.translate(position.X, position.Y);
-            ctx.scale(wscale, -hscale);
-            ctx.rotate(-direction);
+                ctx.fillText(text, 0, 0);
+                ctx.translate(-position.X, -position.Y);
 
-            ctx.fillText(text, 0, 0);
-            ctx.translate(-position.X, -position.Y);
-
-            ctx.restore();
+                ctx.restore();
+            }
         }
     },
     GetColor: function(value) {
-        return value<500? "#125F3D" :"#395F3D" ;
+        return value < 500 ? "#125F3D" : "#395F3D";
     },
 
     GLRegions: function(isoLines) {
@@ -220,7 +226,11 @@ TGLBase.prototype = {
         ctx.restore();
     },
 
-    GLNotesMasks: function(notes, fontHeight, fontFamily, xScale, yScale) {
+    GLNotesMasks: function(isoLines, fontHeight, fontFamily, xScale, yScale) {
+        if (!isoLines) {
+            return;
+        }
+
         if (!xScale) {
             xScale = 1;
         }
@@ -248,14 +258,19 @@ TGLBase.prototype = {
         ctx.lineTo(width, height);
         ctx.lineTo(0, height);
         ctx.closePath();
+        for (var lIndex = 0; lIndex < isoLines.length; lIndex++) {
+            var isoLine = isoLines[lIndex];
+            var notes = isoLine.notes;
+            if (!notes || notes.length == 0) {
+                continue;
+            }
 
-        if (notes) {
             for (var i = 0; i < notes.length; i++) {
                 var ele = notes[i];
 
                 var direction = ele.direction;
                 var position = ele.position;
-                var text = ele.text;
+                var text = ele.note;
 
                 ctx.save();
 
@@ -588,9 +603,9 @@ TGLBase.prototype = {
     },
     DoMove: function(move) {
         if (!IsZero(move)) {
-          move.Y = -move.Y;
-          this.FMapCenter.Sub(this.ViewToMap_Vector(move));
-          return true;
+            move.Y = -move.Y;
+            this.FMapCenter.Sub(this.ViewToMap_Vector(move));
+            return true;
         }
 
         return false;

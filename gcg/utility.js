@@ -116,11 +116,53 @@ var getNearestPointOnPath = function(points, min, target) {
 }
 
 var IsZero = function(vector) {
-   return vector.X == 0 && vector.Y == 0;
+    return vector.X == 0 && vector.Y == 0;
 }
 
-var eventPosition= function(event) {
-  return {X: event.offsetX, Y:event.offsetY};
+var eventPosition = function(event) {
+    return {
+        X: event.offsetX,
+        Y: event.offsetY
+    };
+}
+
+var calculateNotesPosition = function(isoLine) {
+    if (!isoLine) {
+        console.log("calculateNotesPosition, isoLine is emapy");
+        return;
+    }
+
+    var notes = isoLine.notes;
+    if (!notes || notes.length == 0) {
+        return;
+    }
+
+    for (var i = 0; i < notes.length; i++) {
+        var note = notes[i];
+
+        var validOrder = 0;
+
+        for (var j = 0; j < isoLine.isoLine.length - 1; j++) {
+            var point = isoLine.isoLine[j];
+            if (point.isBound) {
+                continue;
+            }
+
+            if (validOrder >= note.order) {
+                var next = isoLine.isoLine[j + 1]
+                note.direction = calculateDirection(TPosition2D(next.X, next.Y).sub(TPosition2D(point.X, point.Y)));
+                note.position.X = (next.X+point.X)/2;
+                note.position.Y = (next.Y+point.Y)/2;
+                break;
+            }
+
+            validOrder++;
+        }
+    }
+}
+
+var calculateDirection = function(vector) {
+    return Math.atan2(vector.Y, vector.X);
 }
 
 var addEvent = (function(window, undefined) {

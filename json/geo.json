@@ -1,6 +1,8 @@
 {
     "isoLines": [{
         "isoValue": 400,
+        "notes":[{"note": "342", "order":2, "direction":0.5,"position": {"X": 600, "Y": 250}}],
+
         "isoLine": [{
             "X": 200,
             "Y": 50,
@@ -93,6 +95,7 @@
     },
     {
         "isoValue": 600,
+        "notes":[{"note": "874", "order":2, "direction":0.5,"position": {"X": 300, "Y": 250}}],
         "isoLine": [{
             "X": 500,
             "Y": 350,
@@ -112,23 +115,6 @@
         }],
         "area": 1
     }],
-
-    "notes": [{
-        "position": {
-            "X": 600,
-            "Y": 250
-        },
-        "direction": 0,
-        "text": "432"
-    }, {
-        "position": {
-            "X": 300,
-            "Y": 200
-        },
-        "direction":0.5,
-        "text": "874"
-    }],
-
     "bounds": [{
         "points": [{
             "X": 0,
