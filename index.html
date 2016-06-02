@@ -7,7 +7,10 @@
     <!-- <script src="http://cdn.jsdelivr.net/walkway/0.0.5/walkway.min.js"></script> -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/site.css" rel="stylesheet">
+    <link href="js/contextmenu/jquery.contextMenu.css" rel="stylesheet" type="text/css" />
     <script src="js/jquery-1.12.3.min.js"></script>
+    <script src="js/contextmenu/jquery.contextMenu.js" type="text/javascript"></script>
+    <script src="js/contextmenu/jquery.ui.position.min.js" type="text/javascript"></script>
     <script src="gcg/utility.js"></script>
     <script src="gcg/Math2D.js"></script>
     <script src="gcg/Matrix2D.js"></script>
@@ -21,27 +24,107 @@
 </head>
 
 <body>
-  <div id="operationButtons">
-    <button type="button" class="zoomextent btn btn-primary" aria-haspopup="true" aria-expanded="false">满屏</button>
-    <button type="button" class="zoomin btn btn-primary" aria-haspopup="true" aria-expanded="false">放大</button>
-    <button type="button" class="zoomout btn btn-primary" aria-haspopup="true" aria-expanded="false">缩小</button>
-    <button type="button" class="moveView btn btn-primary" aria-haspopup="true" aria-expanded="false">移屏</button>
-    <button type="button" class="smooth btn btn-primary" aria-haspopup="true" aria-expanded="false"> 平滑曲线 </button>
-    <button type="button" class="cutPath btn btn-primary" aria-haspopup="true" aria-expanded="false">重画曲线</button>
-    <button type="button" class="save btn btn-primary" aria-haspopup="true" aria-expanded="false">保存</button>
+    <div>
+        <button type="button" class="zoomextent btn btn-primary" aria-haspopup="true" aria-expanded="false">满屏</button>
+        <button type="button" class="zoomin btn btn-primary" aria-haspopup="true" aria-expanded="false">放大</button>
+        <button type="button" class="zoomout btn btn-primary" aria-haspopup="true" aria-expanded="false">缩小</button>
+        <button type="button" class="moveView btn btn-primary" aria-haspopup="true" aria-expanded="false">移屏</button>
+        <span id="operationButtons">
+            <button type="button" class="smooth btn btn-primary" aria-haspopup="true" aria-expanded="false"> 平滑曲线 </button>
+            <button type="button" class="cutPath btn btn-primary" aria-haspopup="true" aria-expanded="false">重画曲线</button>
+        </span>
+        <button type="button" class="save btn btn-primary" aria-haspopup="true" aria-expanded="false">保存</button>
 
-  </div>
+    </div>
     <div id="messageBox" style="height:50px;">
 
     </div>
-    <!-- <svg id="gcgmap" height="560" width="960">
-
-    </svg> -->
+    <span class="context-menu-one btn btn-neutral">right click me</span>
     <div class="canvasContainer" oncontextmenu="return false;">
-      <canvas id="canvas" width="800" height="500"></canvas>
+        <canvas id="canvas" width="800" height="500"></canvas>
     </div>
 
     <div id="tester" style="width:600px;height:250px;"></div>
+
+    <script type="text/javascript">
+        $(function() {
+            $.contextMenu({
+                selector: '.cutPath',
+                trigger: 'none',
+                position: function(opt, x, y) {
+                    opt.$menu.css({
+                        top: window.event.clientY,
+                        left: window.event.clientX
+                    });
+                },
+                callback: function(key, options) {
+                    var m = "clicked: " + key;
+                    window.console && console.log(m) || alert(m);
+                },
+                items: {
+                    "edit": {
+                        name: "Edit",
+                        icon: "edit"
+                    },
+                    "cut": {
+                        name: "Cut",
+                        icon: "cut"
+                    },
+                    copy: {
+                        name: "Copy",
+                        icon: "copy"
+                    },
+                    "paste": {
+                        name: "Paste",
+                        icon: "paste"
+                    },
+                    "delete": {
+                        name: "Delete",
+                        icon: "delete"
+                    },
+                    "sep1": "---------",
+                    "quit": {
+                        name: "Quit",
+                        icon: function() {
+                            return 'context-menu-icon context-menu-icon-quit';
+                        }
+                    }
+                }
+            });
+
+            $.contextMenu({
+                selector: '.smooth',
+                trigger: 'none',
+                position: function(opt, x, y) {
+                    opt.$menu.css({
+                        top: window.event.clientY,
+                        left: window.event.clientX
+                    });
+                },
+                callback: function(key, options) {
+                    var m = "clicked: " + key;
+                    window.console && console.log(m) || alert(m);
+                },
+                items: {
+                    "edit": {
+                        name: "Edit",
+                        icon: "edit"
+                    },
+                    "sep1": "---------",
+                    "quit": {
+                        name: "Quit",
+                        icon: function() {
+                            return 'context-menu-icon context-menu-icon-quit';
+                        }
+                    }
+                }
+            });
+
+            $('canvas').on('click', function(e) {
+                console.log('clicked', this);
+            })
+        });
+    </script>
 </body>
 
 </html>

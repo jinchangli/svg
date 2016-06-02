@@ -2,7 +2,6 @@
     "isoLines": [{
         "isoValue": 400,
         "notes":[{"note": "342", "order":2, "direction":0.5,"position": {"X": 600, "Y": 250}}],
-
         "isoLine": [{
             "X": 200,
             "Y": 50,

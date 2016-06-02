@@ -161,8 +161,39 @@ $(function() {
         return nearestPosition;
     }
 
-    operationForDot.OnMouseOK = function(state) {
+    operationForDot.OnGetPopupMenu = function() {
+        $(".cutPath").contextMenu();
+    }
 
+    operationForDot.OnMouseOK = function(state) {
+        var path = state.getSelectedPath();
+        var index = state.getSelectedPathIndex();
+
+        if (path) {
+            var points = path.isoLine;
+            var newPoints = [];
+
+            for (var i = 0; i < points.length; i++) {
+                var point = points[i];
+                var newPoint = clone(point);
+
+                var last = (i - 1 + points.length) % points.length;
+                var next = (i + 1) % points.length;
+
+                if (view.IsPointSelected(point)) {
+                    newPoint.X = (points[last].X + 2 * point.X + points[next].X) / 4;
+                    newPoint.Y = (points[last].Y + 2 * point.Y + points[next].Y) / 4;
+                }
+
+                newPoints.push(newPoint);
+            }
+
+            path.isoLine = newPoints;
+        }
+
+        calculateNotesPosition(path);
+
+        view.Paint();
         this.FGLView.MouseOperation(null);
     }
 
@@ -187,6 +218,15 @@ $(function() {
         var y = event.offsetY;
         var x = event.offsetX;
         view.WMMouseDown(event, x, y);
+    });
+
+    $("canvas").mouseup(function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+
+        var y = event.offsetY;
+        var x = event.offsetX;
+        view.WMMouseUp(event, x, y);
     });
 
     $(document).mouseup(function(event) {
@@ -225,6 +265,32 @@ $(function() {
         view.WMMouseMove(event, x, y);
     });
 
+
+    $("#operationButtons>.btn").click(function(event) {
+        if ($(this).is(".selected")) {
+            $(this).removeClass("selected");
+        } else {
+            $("#operationButtons>button.selected").removeClass("selected")
+            $(this).addClass("selected");
+            if (currentProcess == null) {
+                currentProcess = new SmoothProcess();
+                currentProcess.start();
+            }
+        }
+    });
+
+    $("#smooth").click(function(event) {
+        event.stopPropagation();
+
+        smoothSelectedPath();
+    });
+
+    $("#cutPath").click(function(event) {
+        event.stopPropagation();
+
+        cutPathByRemovingDots();
+    });
+
     //放大
     $(".zoomin").click(function(event) {
         view.ZoomViewIn();
@@ -244,34 +310,7 @@ $(function() {
 
     $(".smooth").click(function(event) {
         event.stopPropagation();
-        var path = state.getSelectedPath();
-        var index = state.getSelectedPathIndex();
 
-        if (path) {
-            var points = path.isoLine;
-            var newPoints = [];
-
-            for (var i = 0; i < points.length; i++) {
-                var point = points[i];
-                var newPoint = clone(point);
-
-                var last = (i - 1 + points.length) % points.length;
-                var next = (i + 1) % points.length;
-
-                if (view.IsPointSelected(point)) {
-                    newPoint.X = (points[last].X + 2 * point.X + points[next].X) / 4;
-                    newPoint.Y = (points[last].Y + 2 * point.Y + points[next].Y) / 4;
-                }
-
-                newPoints.push(newPoint);
-            }
-
-            path.isoLine = newPoints;
-        }
-
-        calculateNotesPosition(path);
-
-        view.Paint();
     });
 
     $(".cutPath").click(function(event) {

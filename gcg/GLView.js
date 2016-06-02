@@ -583,7 +583,7 @@ TGLView.prototype = {
     },
     ProcessMouseMove0: function(keys, position) {
         var flags = GetMouseKeys(keys);
-      //  console.log("flags.left ="+ flags.left);
+        //  console.log("flags.left ="+ flags.left);
         if (this.FMouseRightButtonDown) {
             if (!flags.left && !flags.middle) {
                 var flag = (flags.shift ? 1 : 0) + (flags.ctrl ? 2 : 0) + (flags.alt ? 4 : 0);
@@ -629,25 +629,25 @@ TGLView.prototype = {
 
             } else if (this.FMouseRightButtonDown) {
                 if (position.sub(this.MouseDownPosition).abs() < 3) {
-                    // if (HMENU popup_menu = FMouseOperation?FMouseOperation.GetPopupMenu(FMouseOperation.PopupMenu):PopupMenu)
-                    // {
-                    //   POINT point = ViewToScreen(position);
-                    //   ClientToScreen(Handle,&point);
-                    //   TrackPopupMenu(popup_menu,TPM_LEFTALIGN,point.x,point.y,0,Handle,0);
-                    // }
+                    if (this.FMouseOperation) {
+                        this.FMouseOperation.GetPopupMenu(keys, position);
+                    }
+
                     this.EndTemporaryOperation();
-                } else
+                } else {
                     this.ViewMoved();
+                }
                 //  //this.SetCursor(this.FCursorOld);
                 this.FMouseRightButtonDown = false;
                 this.FEnableCapture = true;
+                return true;
 
 
             } else {
                 this.FMouseLeftButtonDown = false;
                 return true;
             }
-          //  this.ReleaseCapture();
+            //  this.ReleaseCapture();
         }
         return false;
     },
@@ -749,9 +749,10 @@ TGLView.prototype = {
     },
     WMMouseUp: function(keys, x, y) {
         var position = TPosition2D(x, y);
+        var screenPoition = TPosition2D(x, y);
         position = this.FGLBase.ScreenToLocal(position);
 
-        if (this.ProcessMouseUp0(keys, position)) {
+        if (this.ProcessMouseUp0(keys, screenPoition)) {
             if (this.FMouseOperation && this.FMouseLeftButtonDown && this.FMouseOperation.Paint2NeedDown())
                 this.FMouseOperation.Paint2();
             this.ProcessMouseUp(keys, this.GenCapturePosition(keys, position.X, position.Y));
