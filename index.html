@@ -17,6 +17,7 @@
     <script src="gcg/Bounds.js"></script>
     <script src="gcg/GLBase.js"></script>
     <script src="gcg/GLOperation.js"></script>
+    <script src="gcg/SmoothOperation.js"></script>
     <script src="gcg/GLView.js"></script>
     <script src="gcg/state.js"></script>
     <!--<script src="js/gcg2.js"></script>-->
@@ -45,86 +46,6 @@
     </div>
 
     <div id="tester" style="width:600px;height:250px;"></div>
-
-    <script type="text/javascript">
-        $(function() {
-            $.contextMenu({
-                selector: '.cutPath',
-                trigger: 'none',
-                position: function(opt, x, y) {
-                    opt.$menu.css({
-                        top: window.event.clientY,
-                        left: window.event.clientX
-                    });
-                },
-                callback: function(key, options) {
-                    var m = "clicked: " + key;
-                    window.console && console.log(m) || alert(m);
-                },
-                items: {
-                    "edit": {
-                        name: "Edit",
-                        icon: "edit"
-                    },
-                    "cut": {
-                        name: "Cut",
-                        icon: "cut"
-                    },
-                    copy: {
-                        name: "Copy",
-                        icon: "copy"
-                    },
-                    "paste": {
-                        name: "Paste",
-                        icon: "paste"
-                    },
-                    "delete": {
-                        name: "Delete",
-                        icon: "delete"
-                    },
-                    "sep1": "---------",
-                    "quit": {
-                        name: "Quit",
-                        icon: function() {
-                            return 'context-menu-icon context-menu-icon-quit';
-                        }
-                    }
-                }
-            });
-
-            $.contextMenu({
-                selector: '.smooth',
-                trigger: 'none',
-                position: function(opt, x, y) {
-                    opt.$menu.css({
-                        top: window.event.clientY,
-                        left: window.event.clientX
-                    });
-                },
-                callback: function(key, options) {
-                    var m = "clicked: " + key;
-                    window.console && console.log(m) || alert(m);
-                },
-                items: {
-                    "edit": {
-                        name: "Edit",
-                        icon: "edit"
-                    },
-                    "sep1": "---------",
-                    "quit": {
-                        name: "Quit",
-                        icon: function() {
-                            return 'context-menu-icon context-menu-icon-quit';
-                        }
-                    }
-                }
-            });
-
-            $('canvas').on('click', function(e) {
-                console.log('clicked', this);
-            })
-        });
-    </script>
 </body>
 
 </html>

@@ -78,6 +78,14 @@ TGLView.prototype = {
         var newCanvas = $('<canvas class="clayer" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter($(ctx.canvas));
         this.LayerCtx = newCanvas[0].getContext("2d");
     },
+    ClearOverlayers:function() {
+      var ctx = this.Canvas;
+      var size = ctx.canvas.getBoundingClientRect();
+
+      this.LayerCtx.clearRect(0, 0, size.width, size.height);
+
+      this.SelectedPoints = [];
+    },
     ClearView: function() {
         var ctx = this.Canvas;
         var size = ctx.canvas.getBoundingClientRect();
