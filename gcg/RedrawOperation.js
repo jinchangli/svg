@@ -1,173 +1,264 @@
 var RedrawOperation = function() {
+  var that = this;
+  this.constructor.apply(that, arguments);
 
+  $.contextMenu({
+    selector: '.cutPath',
+    trigger: 'none',
+    position: function(opt, x, y) {
+      opt.$menu.css({
+        top: window.event.clientY,
+        left: window.event.clientX
+      });
+    },
+    callback: function(key, options) {
+      switch (key) {
+        case "done":
+          that.MouseOK();
+          break;
+        case "quit":
+          that.MouseCancel();
+          break;
+        default:
+
+      }
+    },
+    items: {
+      "done": {
+        name: "确认"
+      },
+      "sep1": "---------",
+      "quit": {
+        name: "清空",
+        icon: function() {
+          return 'context-menu-icon context-menu-icon-quit';
+        }
+      }
+    }
+  });
 }
 
 var prototype = RedrawOperation.prototype = new TGLOperation();
+prototype.redrawState = null;
+prototype.startPoint = null;
+prototype.endPoint = null;
+prototype.newPoints = null;
+prototype.oldPoints = null;
+
+prototype.getOverlayer = function() {
+  return this.FGLView.LayerCtx;
+}
+
+prototype.drawLines = function(newPosition) {
+
+  var ctx = this.getOverlayer();
+  var newPoints = this.newPoints;
+  var view = this.FGLView;
+
+  var screenPosition = view.FGLBase.LocalToScreen(newPosition);
+
+  if (newPoints && newPoints.length > 0) {
+    ctx.beginPath();
+    var lastPosition = view.FGLBase.LocalToScreen(newPoints[newPoints.length - 1]);
+    ctx.moveTo(lastPosition.X, lastPosition.Y);
+    ctx.lineTo(screenPosition.X, screenPosition.Y);
+    ctx.stroke();
+  }
+
+  view.DrawSelectedPoint(newPosition);
+  this.newPoints.push(newPosition);
+}
 
 prototype.OnMouseDown = function(keys, position) {
-    console.log("mouse down");
+  // find the nearest point first
+  var view = this.FGLView;
+  var nearestPosition = this.OnMouseCapture(position);
 
-    var nearestPosition = this.OnMouseCapture(position);
+  //if there is one
+  if (nearestPosition) {
 
-    //如果存在最短距离点， 就将当前的等值线设为选定的等值线
-    if (nearestPosition) {
-        //清楚当前点的hover状态
-        view.ClearHoverPoint(nearestPosition.X, nearestPosition.Y);
-
-        if (nearestPosition.lineIndex >= 0) { // means a new line is selected
-            var lineIndex = nearestPosition.lineIndex;
-            state.setSelectedPath(state.viewData.isoLines[lineIndex]);
-        }
-
-
-        // if there is selected points
-        if (view.HasSelectedPoint()) {
-            var index = view.IsPointSelected(nearestPosition);
-            if (index != null) {
-                //if the point was selected, we need to unselect all the points between the last selected point and the current ones
-
-                if (index == 0) {
-                    // if this the very first point, unselect all of the points
-                    view.UnDrawAllPoints();
-                    return;
-                }
-
-
-                var current = nearestPosition;
-
-                var points = clone(view.SelectedPoints);
-
-                var needSelect = false;
-
-                for (var pointIndex = points.length - 1; pointIndex >= 0; pointIndex--) {
-                    var point = points[pointIndex % points.length];
-                    if (point.isBound) {
-                        continue;
-                    }
-
-                    if (current.X == point.X && current.Y == point.Y) {
-                        break;
-                    }
-
-                    view.UnDrawSelectedPoint(point);
-                }
-            } else {
-                //if the point was not selected, we need to add all the points between the selected ones and the new one to be selected
-                var lastSelectedPoint = view.GetLastSelectedPoint();
-                var current = nearestPosition;
-                var path = state.getSelectedPath();
-                var points = path.isoLine;
-
-                var needSelect = false;
-
-                for (var pointIndex = points.length * 2 - 1; pointIndex >= 0; pointIndex--) {
-                    var point = points[pointIndex % points.length];
-                    if (point.isBound) {
-                        continue;
-                    }
-
-                    if (!needSelect) {
-                        if (lastSelectedPoint.X == point.X && lastSelectedPoint.Y == point.Y) {
-                            view.DrawSelectedPoint(point);
-                            needSelect = true;
-                        }
-                    } else {
-                        view.DrawSelectedPoint(point);
-                        if (current.X == point.X && current.Y == point.Y) {
-                            break;
-                        }
-                    }
-                }
-            }
-        } else {
-            // 将当前最近点置于选中状态
-            view.DrawSelectedPoint(nearestPosition);
-        }
+    if (nearestPosition.lineIndex >= 0) { // means a new line is selected
+      var lineIndex = nearestPosition.lineIndex;
+      state.setSelectedPath(state.viewData.isoLines[lineIndex]);
     }
+
+    //if the redrawState is false
+    if (!this.redrawState) {
+      //startPoint = nearestPosition
+      position = this.startPoint = nearestPosition;
+      this.redrawState = true;
+
+      this.newPoints = [];
+    }
+    //else
+    //endPoint = nearestPosition
+    else {
+      position = this.endPoint = nearestPosition;
+      this.redrawState = false;
+      this.drawLines(position);
+    }
+  }
+
+  if (this.redrawState) {
+    this.drawLines(position);
+  }
+
 }
 
 prototype.OnMouseEnd = function() {
-    console.log("mouse end");
+
 }
 
 prototype.OnMouseMove = function(keys, position, downflag) {
-    //  console.log("mouse move with " + downflag);
+  //  console.log("mouse move with " + downflag);
 }
 
 prototype.OnMouseCapture = function(localPosition) {
-    $("#tester").text(Math.floor(localPosition.X) + ", " + Math.floor(localPosition.Y));
-    var position = localPosition;
-    var min = view.FGLBase.ViewToModel_Vector(TVector2D(3, 3)).X;
-    var nearestPosition;
-    var path = state.getSelectedPath();
+  $("#tester").text(Math.floor(localPosition.X) + ", " + Math.floor(localPosition.Y));
+  var position = localPosition;
+  var min = view.FGLBase.ViewToModel_Vector(TVector2D(3, 3)).X;
+  var nearestPosition;
+  var path = state.getSelectedPath();
 
-    if (!path) {
-        var isoLines = state.viewData.isoLines;
-        for (var lineIndex = 0; lineIndex < isoLines.length; lineIndex++) {
-            var line = isoLines[lineIndex];
-            var points = line.isoLine;
-            if (!points) {
-                continue;
-            }
+  if (!path) {
+    var isoLines = state.viewData.isoLines;
+    for (var lineIndex = 0; lineIndex < isoLines.length; lineIndex++) {
+      var line = isoLines[lineIndex];
+      var points = line.isoLine;
+      if (!points) {
+        continue;
+      }
 
-            var result = getNearestPointOnPath(points, min, position);
-            if (result) {
-                nearestPosition = result.position;
-                nearestPosition.lineIndex = lineIndex;
-                min = result.distance;
-            }
-        }
-    } else {
-        var points = path.isoLine;
-        var result = getNearestPointOnPath(points, 3, position);
-        if (result) {
-            nearestPosition = result.position;
-            min = result.distance;
-        }
+      var result = getNearestPointOnPath(points, min, position);
+      if (result) {
+        nearestPosition = result.position;
+        nearestPosition.lineIndex = lineIndex;
+        min = result.distance;
+      }
     }
+  } else {
+    var points = path.isoLine;
+    var result = getNearestPointOnPath(points, 3, position);
+    if (result) {
+      nearestPosition = result.position;
+      min = result.distance;
+    }
+  }
 
-    // if (nearestPosition) {
-    //     var lineIndex = nearestPosition.lineIndex;
-    //     nearestPosition = view.FGLBase.LocalToScreen(nearestPosition);
-    //     nearestPosition.lineIndex = lineIndex;
-    // }
+  // if (nearestPosition) {
+  //     var lineIndex = nearestPosition.lineIndex;
+  //     nearestPosition = view.FGLBase.LocalToScreen(nearestPosition);
+  //     nearestPosition.lineIndex = lineIndex;
+  // }
 
-    // 应该在local空间中， 只有当需要画的时候才转换
-    return nearestPosition;
+  // 应该在local空间中， 只有当需要画的时候才转换
+  return nearestPosition;
 }
 
 prototype.OnGetPopupMenu = function() {
-    $(".cutPath").contextMenu();
+  $(".cutPath").contextMenu();
 }
 
-prototype.OnMouseOK = function(state) {
-    var path = state.getSelectedPath();
-    var index = state.getSelectedPathIndex();
+prototype.OnMouseOK = function() {
+  if(!this.newPoints || this.newPoints.length == 0)
+  {
+    return;
+  }
+  
+  // find the current path
+  var view = this.FGLView;
+  var path = state.getSelectedPath();
+  var newPathStart = this.newPoints[0];
+  var newPathEnd = this.newPoints[this.newPoints.length - 1];
 
-    if (path) {
-        var points = path.isoLine;
-        var newPoints = [];
+  // find the shortest path between startPoint and endPoint
+  var remainParts = cutOffShorterPart(path.isoLine, function(point) {
+      return point.X == newPathStart.X && point.Y == newPathStart.Y;
+    },
+    function(point) {
+      return point.X == newPathEnd.X && point.Y == newPathEnd.Y;
+    })
 
-        for (var i = 0; i < points.length; i++) {
-            var point = points[i];
-            var newPoint = clone(point);
+  // replace these points with newPoints
+  if (!remainParts) {
+    console.log("there is no selected points need to be redraw");
+    return;
+  }
 
-            var last = (i - 1 + points.length) % points.length;
-            var next = (i + 1) % points.length;
-
-            if (view.IsPointSelected(point)) {
-                newPoint.X = (points[last].X + 2 * point.X + points[next].X) / 4;
-                newPoint.Y = (points[last].Y + 2 * point.Y + points[next].Y) / 4;
-            }
-
-            newPoints.push(newPoint);
+  var newPathPoints = [];
+  if (Array.isArray(remainParts)) {
+    if (this.newPoints[0].X == remainParts[0].X && this.newPoints[0].Y == remainParts[0].Y) {
+      this.newPoints.pop();
+      while (true) {
+        var p = this.newPoints.pop();
+        if (this.newPoints.length == 1) {
+          break;
         }
 
-        path.isoLine = newPoints;
+        remainParts.push(p);
+      }
+
+      newPathPoints = remainParts;
+    } else {
+      remainParts = remainParts.slice(1, remainParts.length - 1);
+      newPathPoints = newPathPoints.concat(this.newPoints, remainParts);
+    }
+  } else {
+
+    if (remainParts.first[remainParts.first.length - 1].X == this.newPoints[0].X && remainParts.first[remainParts.first.length - 1].Y == this.newPoints[0].Y) {
+      this.newPoints = this.newPoints.slice(1, this.newPoints.length);
+      newPathPoints = newPathPoints.concat(remainParts.first, this.newPoints, remainParts.second);
+    } else {
+      while (true) {
+        var p = this.newPoints.pop();
+        if (this.newPoints.length == 1) {
+          break;
+        }
+
+        remainParts.first.push(p);
+      }
+
+      newPathPoints = newPathPoints.concat(remainParts.first, remainParts.second);
     }
 
-    calculateNotesPosition(path);
+  }
 
-    view.Paint();
-    this.FGLView.MouseOperation(null);
+  path.isoLine = newPathPoints;
+  //repaint the whole view
+  this.newPoints = [];
+  view.ClearOverlayers();
+
+  calculateNotesPosition(path);
+  view.Paint();
+
+  state.clearSelectedState();
+}
+
+prototype.OnMouseUndo = function() {
+  if (!this.newPoints || this.newPoints.length == 0) {
+    return;
+  }
+  var newPoints = clone(this.newPoints);
+  var view = this.FGLView;
+
+  view.ClearOverlayers();
+  this.newPoints = [];
+
+  if (newPoints.length > 0) {
+    newPoints.pop();
+
+    for (var i = 0; i < newPoints.length; i++) {
+      this.drawLines(newPoints[i]);
+    }
+  }
+
+  if (newPoints.length == 0) {
+    this.redrawState = false;
+  } else {
+    this.redrawState = true;
+  }
+}
+
+prototype.OnMouseCancel = function() {
+  this.FGLView.ClearOverlayers();
 }

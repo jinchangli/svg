@@ -366,10 +366,6 @@ TGLView.prototype = {
                 if (this.FCapturedPosition != null && captured_position.X == this.FCapturedPosition.X && captured_position.Y == this.FCapturedPosition.Y) {
 
                 } else {
-                    console.log("更新FCapturedPosition");
-                    if (this.FCapturedPosition)
-                        console.log("FCapturedPosition:" + this.FCapturedPosition.X + " " + this.FCapturedPosition.Y);
-                    console.log("captured_position:" + captured_position.X + " " + captured_position.Y);
                     this.FCapturedPosition = mouse_position = captured_position;
                     this.DrawCapturedPoint();
                 }

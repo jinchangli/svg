@@ -1,4 +1,4 @@
-$(function() {
+$(function () {
 
     var bound;
     var originalData;
@@ -8,7 +8,7 @@ $(function() {
 
     var view = window.view = new TGLView(ctx);
     view.AllowCapture = true;
-    view.OnPaint = function() {
+    view.OnPaint = function () {
         window.ctx = this.Canvas;
         var data = state.viewData;
 
@@ -28,19 +28,19 @@ $(function() {
         view.FGLBase.EndLocal();
     }
 
-    $(document).keydown(function(event) {
-        //  event.preventDefault();
+    $(document).keydown(function (event) {
+         event.preventDefault();
         //event.stopImmediatePropagation();
         view.WMKeyDown(event.which);
     });
 
-    $(document).keyup(function(event) {
-        //  event.preventDefault();
-        //event.stopImmediatePropagation();
+    $(document).keyup(function (event) {
+         event.preventDefault();
+        event.stopImmediatePropagation();
         view.WMKeyUp(event.which);
     });
 
-    $("canvas").mousedown(function(event) {
+    $("canvas").mousedown(function (event) {
         // event.preventDefault();
         // event.stopImmediatePropagation();
 
@@ -49,7 +49,7 @@ $(function() {
         view.WMMouseDown(event, x, y);
     });
 
-    $("canvas").mouseup(function(event) {
+    $("canvas").mouseup(function (event) {
         event.preventDefault();
         event.stopImmediatePropagation();
 
@@ -58,7 +58,7 @@ $(function() {
         view.WMMouseUp(event, x, y);
     });
 
-    $(document).mouseup(function(event) {
+    $(document).mouseup(function (event) {
         // event.preventDefault();
         // event.stopImmediatePropagation();
 
@@ -67,13 +67,13 @@ $(function() {
         view.WMMouseUp(event, x, y);
     });
 
-    $("canvas").click(function(event) {
+    $("canvas").click(function (event) {
         // event.preventDefault();
         // event.stopImmediatePropagation();
     });
 
 
-    $("canvas").mousemove(function(event) {
+    $("canvas").mousemove(function (event) {
         var y = event.offsetY;
         var x = event.offsetX;
 
@@ -94,49 +94,59 @@ $(function() {
         view.WMMouseMove(event, x, y);
     });
 
-
-    $("#operationButtons>.btn").click(function(event) {
-        if ($(this).is(".selected")) {
-            $(this).removeClass("selected");
+    var updateButtonState = function (btnNode) {
+        if ($(btnNode).is(".selected")) {
+            $(btnNode).removeClass("selected");
         } else {
             $("#operationButtons>button.selected").removeClass("selected")
-            $(this).addClass("selected");
+            $(btnNode).addClass("selected");
         }
-    });
+    }
 
     //放大
-    $(".zoomin").click(function(event) {
+    $(".zoomin").click(function (event) {
         view.ZoomViewIn();
         view.Paint();
     });
 
     //缩小
-    $(".zoomout").click(function(event) {
+    $(".zoomout").click(function (event) {
         view.ZoomViewOut();
         view.Paint();
     });
 
-    $(".zoomextent").click(function(event) {
+    $(".zoomextent").click(function (event) {
         view.ZoomViewExtent();
         view.Paint();
     });
 
-    $(".smooth").click(function(event) {
+    $(".smooth").click(function (event) {
         event.stopPropagation();
+        updateButtonState(this);
+        if ($(this).is('.selected')) {
+            var operationForDot = new SmoothOperation(view);
 
-        var operationForDot = new SmoothOperation(view);
-
-        view.MouseOperation(operationForDot);
+            view.MouseOperation(operationForDot);
+        } else {
+            view.MouseOperation(null);
+        }
     });
 
-    $(".cutPath").click(function(event) {
+    $(".cutPath").click(function (event) {
         event.stopPropagation();
 
-        //cutPathByRemovingDots();
+        updateButtonState(this);
+        if ($(this).is('.selected')) {
+            var operationForDot = new RedrawOperation(view);
+
+            view.MouseOperation(operationForDot);
+        } else {
+            view.MouseOperation(null);
+        }
     });
 
 
-    $(".save").click(function() {
+    $(".save").click(function () {
         var pngUrl = $("#canvas")[0].toDataURL('image/png');
         if ($(".download").length > 0) {
 
@@ -151,7 +161,7 @@ $(function() {
         url: "json/geo.json",
         cache: false,
         dataType: "json"
-    }).done(function(data) {
+    }).done(function (data) {
         if (data) {
             originalData = data;
             state.viewData = clone(data);
@@ -160,7 +170,7 @@ $(function() {
             view.ZoomViewExtent();
             view.Paint();
         }
-    }).fail(function(message) {
+    }).fail(function (message) {
         console.log(message);
     });
 

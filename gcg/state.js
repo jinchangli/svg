@@ -11,11 +11,8 @@ var state = (function() {
         highLightDotsInPath(path);
     }
 
-    var clearSelectedState = function(path) {
+    var clearSelectedState = function() {
         selectedPath = null;
-        // $(path).parent().removeClass("selected");
-        $("#smooth").addClass("disabled");
-        removeHighLightDots(path);
         pathIndex = null;
     }
 
@@ -27,10 +24,6 @@ var state = (function() {
 
     }
 
-    var clearSelectedState = function() {
-
-    }
-
     return {
         getSelectedPath: function(params) {
             return selectedPath;
@@ -38,6 +31,7 @@ var state = (function() {
         getSelectedPathIndex:function() {
             return pathIndex;
         },
+        clearSelectedState: clearSelectedState,
         setSelectedPath: function(path, index) {
             // click on the same path twice, it will be unselected
             if (path == selectedPath) {

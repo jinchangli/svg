@@ -52,7 +52,7 @@ prototype.OnMouseDown = function(keys, position) {
 
         if (nearestPosition.lineIndex >= 0) { // means a new line is selected
             var lineIndex = nearestPosition.lineIndex;
-            state.setSelectedPath(state.viewData.isoLines[lineIndex]);
+            state.setSelectedPath(state.viewData.isoLines[lineIndex], lineIndex);
         }
 
 
