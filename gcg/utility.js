@@ -31,6 +31,15 @@ var Exp = function() {
   return Math.exp.apply(Math, arguments);
 }
 
+var Ceil = function(number) {
+   number = number + 0.5;
+   return Math.floor(number);
+}
+
+var Floor = function() {
+  return Math.floor.apply(Math, arguments);
+}
+
 var GetMouseKeys = function(event) {
   var obj = {
     left: null,

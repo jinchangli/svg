@@ -1,5 +1,6 @@
 var SmoothOperation = function() {
     var that = this;
+    $("canvas").css("cursor", "crosshair");
     this.constructor.apply(that, arguments);
 
     $.contextMenu({

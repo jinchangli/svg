@@ -10,7 +10,13 @@ TRect.prototype = {
     left: null,
     top: null,
     right: null,
-    bottom: null
+    bottom: null,
+    width: function() {
+      return Abs(this.right - this.left);
+    },
+    height: function() {
+      return Abs(this.bottom-this.top);
+    }
 }
 
 function TBound2D() {
