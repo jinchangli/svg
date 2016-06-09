@@ -1,7 +1,12 @@
 .operButtons {
     margin-top: 20px;
 }
-#operationButtons>button.selected {
+
+.operations button {
+  width:100px;
+}
+
+#stateButtones button.selected {
   color: #fff;
  background-color: #d9534f;
  border-color: #d43f3a;
@@ -34,13 +39,19 @@
   /*height: 500px;
   width: 800px;*/
   border: 1px solid black;
-  margin-left: 50px;
+  margin-left: -40px;
   position:absolute;
   left: 0;
   top: 0;
 }
 
-#tester{
-  position: relative;
-  top: 520px;
+.operations>div{
+  margin:10px;
+  max-width: 250px;
+}
+
+#stateButtones>div{
+  margin-bottom: 10px;
+  max-width: 250px;
+
 }

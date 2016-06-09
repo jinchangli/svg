@@ -32,12 +32,74 @@ var Exp = function() {
 }
 
 var Ceil = function(number) {
-   number = number + 0.5;
-   return Math.floor(number);
+     return Math.ceil.apply(Math, arguments);
 }
 
 var Floor = function() {
   return Math.floor.apply(Math, arguments);
+}
+
+Math.log10 = Math.log10 || function(x) {
+  return Math.log(x) / Math.LN10;
+};
+
+// 最佳值
+function BestNumber(x)
+{
+  if (x > 0)
+  {
+    var t = Math.log10(x);
+    var n = Floor(t);
+    x = Math.pow(10.0,t-n);
+    if (x >= 5)
+      x = 5;
+    else if (x >= 2)
+      x = 2;
+    else
+      x = 1;
+    return x* Math.pow(10.0,n);
+  }
+  else if (x < 0)
+    return -BestNumber(-x);
+  return 0;
+}
+
+
+var bs =
+[
+  1,2,5,10,20,25,50,100,200,250,500,1000,2000,2500,5000,10000,20000,
+  25000,50000,100000,200000,250000,500000,1000000,2000000,2500000,
+  5000000,10000000,20000000,25000000,50000000,100000000,200000000
+  //,250000000LL,500000000LL,1000000000LL,2000000000LL,2500000000LL
+];
+
+
+// 最佳整数
+function BestInteger(x)
+{
+  if (x > 0)
+  {
+    var start = 0,  end = bs.length-1;
+    var i = Floor(x);
+    if (i <= bs[start])
+      return bs[start];
+    if (i >= bs[end])
+      return bs[end];
+    while (start < end-1) // 二分搜索
+    {
+      var w = (start+end)/2;
+      if (i > bs[w])
+        start = w;
+      else if (i < bs[w])
+        end = w;
+      else
+        return bs[w];
+    }
+    return bs[start];
+  }
+  else if (x < 0)
+    return -BestInteger(-x);
+  return 0;
 }
 
 var GetMouseKeys = function(event) {

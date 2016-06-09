@@ -11,9 +11,8 @@ $(function () {
     view.OnPaint = function () {
         window.ctx = this.Canvas;
         var data = state.viewData;
-
         view.ClearView();
-
+        view.FGLBase.DrawViewGridXY(0.1);
         view.FGLBase.BeginLocal();
 
         view.FGLBase.GLRegions(data.isoLines);
@@ -76,6 +75,7 @@ $(function () {
     $("canvas").mousemove(function (event) {
         var y = event.offsetY;
         var x = event.offsetX;
+        $("#screenPosition").text(x + ", " + y);
 
         // 以下处理是为兼容IE浏览器
         event.which = 0;
@@ -98,7 +98,7 @@ $(function () {
         if ($(btnNode).is(".selected")) {
             $(btnNode).removeClass("selected");
         } else {
-            $("#operationButtons>button.selected").removeClass("selected")
+            $("#stateButtones button.selected").removeClass("selected")
             $(btnNode).addClass("selected");
         }
     }
@@ -168,6 +168,7 @@ $(function () {
             var bound = utility.GenBoundBox(data.isoLines);
             view.ModelBound(bound);
             view.ZoomViewExtent();
+
             view.Paint();
         }
     }).fail(function (message) {
