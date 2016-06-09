@@ -1012,4 +1012,4 @@ TGLView.prototype = {
     Invalidate: function() {
 
     }
-}
+  }

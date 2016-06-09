@@ -180,8 +180,6 @@ TGLBase.prototype = {
                 ctx.rotate(-direction);
 
                 ctx.fillText(text, 0, 0);
-                ctx.translate(-position.X, -position.Y);
-
                 ctx.restore();
             }
         }
@@ -371,9 +369,9 @@ TGLBase.prototype = {
     }, //模型范围
     ViewScale: function() {
         if (arguments.length == 0) {
-            return FMapScale / FViewScale;
+            return this.FMapScale / this.FViewScale;
         } else {
-            FViewScale = FMapScale / arguments[0];
+            this.FViewScale = this.FMapScale / arguments[0];
         }
     },
 
@@ -527,6 +525,9 @@ TGLBase.prototype = {
     LocalToScreen: function(position) {
         return this.ViewToScreen(this.LocalToView(position));
     },
+    ScreenToModel: function(position) {
+        return this.ViewToModel(this.ScreenToView(position));
+    },
     ModelToLocal: function(position) { //模型空间-->局部空间
         return position.sub(this.FBasePosition);
     },
@@ -621,5 +622,113 @@ TGLBase.prototype = {
             return true;
         }
         return false;
+    },
+    FillText: function(point, offset, text) {
+        var ctx = this.Canvas;
+
+        ctx.save();
+        ctx.translate(point.X, point.Y);
+        ctx.scale(1, -1);
+        ctx.fillText(text, offset.X, offset.Y);
+        ctx.restore();
+    },
+    DrawViewGridXY: function(viewdelta) {
+        var ctx = this.Canvas;
+        if (this.FViewRect.width() > 0 && this.FViewRect.height() > 0) {
+            var p = TPosition2D();
+            var bound2d = TBound2D();
+            var p = this.ScreenToModel(TPosition2D());
+            if (p) {
+                bound2d.SetBound(p);
+            }
+
+            p = this.ScreenToModel(TPosition2D(this.FViewRect.width(), 0));
+
+            if (p) {
+                bound2d.SetBound(p);
+            }
+
+            p = this.ScreenToModel(TPosition2D(0, this.FViewRect.height()));
+            if (p) {
+                bound2d.SetBound(p);
+            }
+            p = this.ScreenToModel(TPosition2D(this.FViewRect.width(), this.FViewRect.height()))
+
+            if (p) {
+                bound2d.SetBound(p);
+            }
+
+            if (bound2d.Valid) {
+                var v = TVector2D();
+                // var vr = TViewRect();
+                var str = "";
+                var p1 = TPosition2D(),
+                    p2 = TPosition2D();
+
+                var t, direction, length;
+                var modeldelta = BestNumber(viewdelta * this.ViewScale());
+                if (modeldelta < 1)
+                    modeldelta = 1;
+                var rect = TRect();
+                rect.left = Ceil(bound2d.Min.X / modeldelta);
+                rect.top = Ceil(bound2d.Min.Y / modeldelta);
+                rect.right = Floor(bound2d.Max.X / modeldelta);
+                rect.bottom = Floor(bound2d.Max.Y / modeldelta);
+
+                this.BeginView();
+                // glColor4fv(&gridcolor.Red);
+                ctx.beginPath();
+                var strokeLength = 10;
+                for (var x = rect.left; x <= rect.right; ++x) {
+                    t = x * modeldelta;
+                      var text = t+"";
+                    var point1 = this.ModelToView(TPosition2D(t, bound2d.Min.Y));
+                    ctx.moveTo(point1.X, point1.Y);
+                    ctx.lineTo(point1.X, point1.Y + strokeLength)
+
+                    this.FillText(point1, {
+                        X: 2,
+                        Y: -2
+                    }, text);
+
+                    var point2 = this.ModelToView(TPosition2D(t, bound2d.Max.Y));
+
+                    ctx.moveTo(point2.X, point2.Y);
+                    ctx.lineTo(point2.X, point2.Y - strokeLength);
+
+                    this.FillText(point2, {
+                        X: 2,
+                        Y: strokeLength
+                    }, text);
+                }
+                for (var y = rect.top; y <= rect.bottom; ++y) {
+                    t = y * modeldelta;
+                    var text = t+"";
+                    var point1 = this.ModelToView(TPosition2D(bound2d.Min.X, t));
+                    ctx.moveTo(point1.X, point1.Y);
+                    ctx.lineTo(point1.X + strokeLength, point1.Y);
+                    this.FillText(point1, {
+                        X: 2,
+                        Y: -3
+                    }, text);
+
+                    var point2 = this.ModelToView(TPosition2D(bound2d.Max.X, t));
+                    ctx.moveTo(point2.X, point2.Y);
+                    ctx.lineTo(point2.X - strokeLength, point2.Y);
+
+                    ctx.save();
+                    ctx.textAlign = "right";
+                    this.FillText(point2, {
+                        X: -2,
+                        Y: -3
+                    }, text);
+                    ctx.restore();
+                }
+
+                ctx.stroke();
+
+                this.EndView();
+            }
+        }
     }
 }

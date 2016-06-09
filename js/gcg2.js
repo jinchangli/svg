@@ -341,11 +341,11 @@
 
 
         var currentProcess = null;
-        $("#operationButtons>button").click(function(event) {
+        $("#stateButtones>button").click(function(event) {
             if ($(this).is(".selected")) {
                 $(this).removeClass("selected");
             } else {
-                $("#operationButtons>button.selected").removeClass("selected")
+                $("#stateButtones>button.selected").removeClass("selected")
                 $(this).addClass("selected");
                 if (currentProcess == null) {
                     currentProcess = new SmoothProcess();

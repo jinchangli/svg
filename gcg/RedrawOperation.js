@@ -106,7 +106,7 @@ prototype.OnMouseDown = function(keys, position) {
 }
 
 prototype.OnMouseEnd = function() {
-
+    $("canvas").css("cursor", "default");
 }
 
 prototype.OnMouseMove = function(keys, position, downflag) {
@@ -114,7 +114,8 @@ prototype.OnMouseMove = function(keys, position, downflag) {
 }
 
 prototype.OnMouseCapture = function(localPosition) {
-  $("#tester").text(Math.floor(localPosition.X) + ", " + Math.floor(localPosition.Y));
+  $("#localPosition").text(Math.floor(localPosition.X) + ", " + Math.floor(localPosition.Y));
+
   var position = localPosition;
   var min = view.FGLBase.ViewToModel_Vector(TVector2D(3, 3)).X;
   var nearestPosition;
@@ -164,7 +165,7 @@ prototype.OnMouseOK = function() {
   {
     return;
   }
-  
+
   // find the current path
   var view = this.FGLView;
   var path = state.getSelectedPath();

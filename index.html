@@ -1,11 +1,18 @@
 <!doctype html>
-<html>
+<html oncontextmenu="return false;">
 
 <head>
     <title>WebGL Demo</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <!-- <script src="http://cdn.jsdelivr.net/walkway/0.0.5/walkway.min.js"></script> -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/sb-admin-2.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="css/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
     <link href="css/site.css" rel="stylesheet">
     <link href="js/contextmenu/jquery.contextMenu.css" rel="stylesheet" type="text/css" />
     <script src="js/jquery-1.12.3.min.js"></script>
@@ -26,26 +33,93 @@
 </head>
 
 <body>
-    <div>
-        <button type="button" class="zoomextent btn btn-primary" aria-haspopup="true" aria-expanded="false">满屏</button>
-        <button type="button" class="zoomin btn btn-primary" aria-haspopup="true" aria-expanded="false">放大</button>
-        <button type="button" class="zoomout btn btn-primary" aria-haspopup="true" aria-expanded="false">缩小</button>
-        <button type="button" class="moveView btn btn-primary" aria-haspopup="true" aria-expanded="false">移屏</button>
-        <span id="operationButtons">
-            <button type="button" class="smooth btn btn-primary" aria-haspopup="true" aria-expanded="false"> 平滑曲线 </button>
-            <button type="button" class="cutPath btn btn-primary" aria-haspopup="true" aria-expanded="false">重画曲线</button>
-        </span>
-        <button type="button" class="save btn btn-primary" aria-haspopup="true" aria-expanded="false">保存</button>
+    <div id="wrapper">
 
-    </div>
-    <div id="messageBox" style="height:50px;">
+        <!-- Navigation -->
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="index.html">GCG 等值线系统</a>
+            </div>
+            <!-- /.navbar-header -->
 
-    </div>
-    <div class="canvasContainer" oncontextmenu="return false;">
-        <canvas id="canvas" width="800" height="500"></canvas>
-    </div>
+            <div class="nav navbar-top-links navbar-right">
+                <div style="float:right; padding-right: 30px;">
+                    <div>local position: <span id="localPosition"></span></div>
+                    <div>screen position: <span id="screenPosition"></span></div>
+                </div>
+            </div>
+            <!-- /.navbar-top-links -->
 
-    <div id="tester" style="width:600px;height:250px;"></div>
+            <div class="navbar-default sidebar" role="navigation">
+                <div class="sidebar-nav navbar-collapse">
+                    <div class="operations">
+                        <div>
+                            <button type="button" class="zoomextent btn btn-primary" aria-haspopup="true" aria-expanded="false">重置视图</button>
+                        </div>
+                        <div>
+                            <button type="button" class="zoomin btn btn-primary" aria-haspopup="true" aria-expanded="false">放大</button>
+                            <button type="button" class="zoomout btn btn-primary" aria-haspopup="true" aria-expanded="false">缩小</button>
+
+                        </div>
+                        <div id="stateButtones">
+                            <div>
+                                <button type="button" class="smooth btn btn-primary" aria-haspopup="true" aria-expanded="false"> 平滑曲线 </button>
+
+                            </div>
+                            <div>
+
+                                <button type="button" class="cutPath btn btn-primary" aria-haspopup="true" aria-expanded="false">重画曲线</button>
+                            </div>
+                        </div>
+                        <div>
+
+                            <button type="button" class="save btn btn-primary" aria-haspopup="true" aria-expanded="false">保存</button>
+                        </div>
+
+                    </div>
+                    <div id="messageBox" style="height:50px;">
+
+                    </div>
+
+                </div>
+                <!-- /.sidebar-collapse -->
+            </div>
+            <!-- /.navbar-static-side -->
+        </nav>
+        <!-- Page Content -->
+        <div id="page-wrapper">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="canvasContainer">
+                            <canvas id="canvas"></canvas>
+                        </div>
+                        <script>
+                            var c = $("#canvas");
+                            var height = $(window).height() - 100;
+                            var width = $(window).width() - 300;
+
+                            c.attr("width", width);
+                            c.attr("height", height);
+
+                            c.parent().width(width).height(height);
+                        </script>
+
+                    </div>
+                    <!-- /.col-lg-12 -->
+                </div>
+                <!-- /.row -->
+            </div>
+            <!-- /.container-fluid -->
+        </div>
+        <!-- /#page-wrapper -->
+    </div>
 </body>
 
 </html>
