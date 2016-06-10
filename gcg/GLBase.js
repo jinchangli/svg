@@ -719,7 +719,7 @@ TGLBase.prototype = {
                     ctx.save();
                     ctx.textAlign = "right";
                     this.FillText(point2, {
-                        X: -2,
+                        X: -1,
                         Y: -3
                     }, text);
                     ctx.restore();

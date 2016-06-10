@@ -28,14 +28,14 @@ var state = (function() {
         getSelectedPath: function(params) {
             return selectedPath;
         },
-        getSelectedPathIndex:function() {
+        getSelectedPathIndex: function() {
             return pathIndex;
         },
         clearSelectedState: clearSelectedState,
         setSelectedPath: function(path, index) {
             // click on the same path twice, it will be unselected
             if (path == selectedPath) {
-              clearSelectedState(selectedPath);
+                clearSelectedState(selectedPath);
             } else {
                 if (selectedPath) {
                     clearSelectedState(selectedPath);
@@ -58,27 +58,27 @@ var state = (function() {
             selectingPathDotsStatus = false;
         },
 
-        selectPoint:function(point) {
-           if(!selectedPoints){
-             selectedPoints = [];
-           }
+        selectPoint: function(point) {
+            if (!selectedPoints) {
+                selectedPoints = [];
+            }
 
-           selectedPoints.push(point);
+            selectedPoints.push(point);
         },
-        tryUnselectPoint:function(point) {
-            if(selectedPoints){
+        tryUnselectPoint: function(point) {
+            if (selectedPoints) {
                 var index = -1;
-                for(var i = 0;i<selectedPoints.length;i++){
-                  var p = selectedPoints[i];
-                  if(p.is_eql(point)){
-                    index = i;
-                    break;
-                  }
+                for (var i = 0; i < selectedPoints.length; i++) {
+                    var p = selectedPoints[i];
+                    if (p.is_eql(point)) {
+                        index = i;
+                        break;
+                    }
                 }
 
-                if(index==0){
-                   selectedPath = null;
-                }else if(index >0){
+                if (index == 0) {
+                    selectedPath = null;
+                } else if (index > 0) {
 
                 }
             }

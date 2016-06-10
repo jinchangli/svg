@@ -9,6 +9,21 @@ TGLOperation.prototype = {
     PopupMenu: null,
     Temporary: null,
     Paint2NeedDown: null,
+    stacks: [],
+    cacheData: function(dataEntity) {
+        this.stacks.push(dataEntity);
+    },
+    getLastCachedData: function() {
+        if (this.stacks && this.stacks.length > 0) {
+            var entity = this.stacks.pop();
+            return entity;
+        }else{
+          return null;
+        }
+    },
+    clearCachedData:function() {
+      this.stacks = [];
+    },
 
     // 构造函数
     constructor: function(glView) {
@@ -33,9 +48,15 @@ TGLOperation.prototype = {
     OnGetPopupMenu: null, //OnGetPopupMenu(popup_menu)
     OnMouseCapture: null, //OnMouseCapture(position, nearsetPosition)
     OnMouseCapture2D: null, //OnMouseCapture2D(glbase, position, nearsetPosition)
+    OnMouseDbClick:null,
     OnPaint: null, //OnPaint(canvasObj)
     OnPaint2: null, //OnPaint2(canvasObj)
 
+    MouseDbClick: function(position) {
+      if(this.OnMouseDbClick){
+        this.OnMouseDbClick(position);
+      }
+    },
     //
     MouseDown: function(keys, position) {
         if (this.OnMouseDown)

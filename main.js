@@ -66,9 +66,12 @@ $(function () {
         view.WMMouseUp(event, x, y);
     });
 
-    $("canvas").click(function (event) {
+    $("canvas").dblclick(function (event) {
         // event.preventDefault();
         // event.stopImmediatePropagation();
+        var y = event.offsetY;
+        var x = event.offsetX;
+        view.WMDblClick(event, x, y);
     });
 
 

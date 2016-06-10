@@ -78,13 +78,13 @@ TGLView.prototype = {
         var newCanvas = $('<canvas class="clayer" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter($(ctx.canvas));
         this.LayerCtx = newCanvas[0].getContext("2d");
     },
-    ClearOverlayers:function() {
-      var ctx = this.Canvas;
-      var size = ctx.canvas.getBoundingClientRect();
+    ClearOverlayers: function() {
+        var ctx = this.Canvas;
+        var size = ctx.canvas.getBoundingClientRect();
 
-      this.LayerCtx.clearRect(0, 0, size.width, size.height);
+        this.LayerCtx.clearRect(0, 0, size.width, size.height);
 
-      this.SelectedPoints = [];
+        this.SelectedPoints = [];
     },
     ClearView: function() {
         var ctx = this.Canvas;
@@ -322,7 +322,7 @@ TGLView.prototype = {
         if (arguments.length <= 2) {
             flag = false;
         }
-        if (from != to) {
+        if (!from.is_eql(to)) {
             this.MoveView(flag ? from.add(to).mul(0.5) : from, to); // TBD: TPosition2D, add, divide
             this.Paint();
         }
@@ -364,7 +364,7 @@ TGLView.prototype = {
 
             if (captured_position) {
                 if (this.FCapturedPosition != null && captured_position.X == this.FCapturedPosition.X && captured_position.Y == this.FCapturedPosition.Y) {
-
+                    this.FCapturedPosition = mouse_position = captured_position;
                 } else {
                     this.FCapturedPosition = mouse_position = captured_position;
                     this.DrawCapturedPoint();
@@ -775,8 +775,23 @@ TGLView.prototype = {
             }
         }
     },
-    WMDblClick: function(keys) {
-        this.FDoubleClicked(true);
+    WMDblClick: function(keys, x, y) {
+        this.FDoubleClicked = true;
+
+        if (!this.FMouseOperation) {
+            return;
+        }
+
+        var flags = GetMouseKeys(event);
+        if (!flags.left) {
+            return;
+        }
+        var position = TPosition2D(x, y);
+        position = this.FGLBase.ScreenToLocal(position);
+        //var nearestPosition = this.GenCapturePosition(keys, position.X, position.Y);
+
+            this.FMouseOperation.MouseDbClick(position);
+        
     },
     WMKeyDown: function(key, nkeys) {
         this.OnKey(key, nkeys, -1);
@@ -1012,4 +1027,4 @@ TGLView.prototype = {
     Invalidate: function() {
 
     }
-  }
+}

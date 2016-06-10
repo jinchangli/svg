@@ -2,7 +2,16 @@ var SmoothOperation = function() {
     var that = this;
     $("canvas").css("cursor", "crosshair");
     this.constructor.apply(that, arguments);
+    this.buildContextMenu();
+    this.cacheData(clone(state.viewData));
+}
 
+var prototype = SmoothOperation.prototype = new TGLOperation();
+
+prototype.dataChangeConfirmed = false;
+
+prototype.buildContextMenu = function() {
+    var that = this;
     $.contextMenu({
         selector: '.smooth',
         trigger: 'none',
@@ -14,32 +23,46 @@ var SmoothOperation = function() {
         },
         callback: function(key, options) {
             switch (key) {
-                case "done":
+
+                case "apply":
                     that.MouseOK();
                     break;
-                case "quit":
+                case "done":
+                    {
+                        that.dataChangeConfirmed = true;
+                        that.OnMouseCancel();
+                        view.MouseOperation(null);
+                        break;
+                    }
+                case "cancel":
                     that.MouseCancel();
                     break;
-                default:
-
+                case "quit":
+                    {
+                        that.MouseCancel();
+                        view.MouseOperation(null);
+                        break;
+                    }
             }
         },
         items: {
+            "apply": {
+                name: "应用"
+            },
             "done": {
-                name: "确认"
+                name: "确认并结束"
+            },
+            "cancel": {
+                name: "取消"
             },
             "sep1": "---------",
             "quit": {
-                name: "清空",
-                icon: function() {
-                    return 'context-menu-icon context-menu-icon-quit';
-                }
+                name: "结束",
+                icon: 'context-menu-icon context-menu-icon-quit'
             }
         }
     });
 }
-
-var prototype = SmoothOperation.prototype = new TGLOperation();
 
 prototype.OnMouseDown = function(keys, position) {
     console.log("mouse down");
@@ -123,12 +146,30 @@ prototype.OnMouseDown = function(keys, position) {
     }
 }
 
-prototype.OnMouseEnd = function() {
-    $("canvas").css("cursor", "default");
-}
+prototype.OnMouseDbClick = function(localPosition) {
+    var nearestPosition = this.OnMouseCapture(localPosition);
 
-prototype.OnMouseMove = function(keys, position, downflag) {
-    //  console.log("mouse move with " + downflag);
+    if (!nearestPosition) {
+        return;
+    }
+
+    if (nearestPosition.lineIndex >= 0) { // means a new line is selected
+        state.clearSelectedState();
+        var lineIndex = nearestPosition.lineIndex;
+        state.setSelectedPath(state.viewData.isoLines[lineIndex], lineIndex);
+    }
+
+    var path = state.getSelectedPath();
+    var points = path.isoLine;
+
+    for (var pointIndex = points.length - 1; pointIndex >= 0; pointIndex--) {
+        var point = points[pointIndex % points.length];
+        if (point.isBound) {
+            continue;
+        }
+
+        view.DrawSelectedPoint(point);
+    }
 }
 
 prototype.OnMouseCapture = function(localPosition) {
@@ -180,6 +221,7 @@ prototype.OnGetPopupMenu = function() {
 prototype.OnMouseOK = function() {
     var path = state.getSelectedPath();
     var index = state.getSelectedPathIndex();
+    var selectedPoints = [];
 
     if (path) {
         var points = path.isoLine;
@@ -192,9 +234,11 @@ prototype.OnMouseOK = function() {
             var last = (i - 1 + points.length) % points.length;
             var next = (i + 1) % points.length;
 
-            if (view.IsPointSelected(point)) {
+            var index = view.IsPointSelected(point);
+            if (index != null) {
                 newPoint.X = (points[last].X + 2 * point.X + points[next].X) / 4;
                 newPoint.Y = (points[last].Y + 2 * point.Y + points[next].Y) / 4;
+                selectedPoints.push(newPoint);
             }
 
             newPoints.push(newPoint);
@@ -206,8 +250,28 @@ prototype.OnMouseOK = function() {
     calculateNotesPosition(path);
 
     view.Paint();
+
+    for (var i = 0; i < selectedPoints.length; i++) {
+        view.DrawSelectedPoint(selectedPoints[i]);
+    }
 }
 
 prototype.OnMouseCancel = function() {
     this.FGLView.ClearOverlayers();
+    state.clearSelectedState();
+}
+
+prototype.OnMouseEnd = function() {
+    if (!this.dataChangeConfirmed) {
+        var data = this.stacks[0];
+        state.viewData = data;
+        view.Paint();
+    } else {
+
+    }
+
+    this.clearCachedData();
+
+    $("canvas").css("cursor", "default");
+    $("#stateButtones button.selected").removeClass("selected");
 }
