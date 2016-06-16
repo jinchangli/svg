@@ -103,6 +103,7 @@ TGLView.prototype = {
         ctx.clearRect(0, 0, size.width, size.height);
 
         this.LayerCtx.clearRect(0, 0, size.width, size.height);
+          this.PointSelectLayerCtx.clearRect(0, 0, size.width, size.height);
 
         this.SelectedPoints = [];
     },

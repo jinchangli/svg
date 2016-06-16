@@ -70,7 +70,7 @@ prototype.buildContextMenu = function() {
 }
 
 prototype.getOverlayer = function() {
-    return this.FGLView.LayerCtx;
+    return this.FGLView.PointSelectLayerCtx;
 }
 
 prototype.drawLines = function(newPosition) {
@@ -155,22 +155,20 @@ prototype.OnMouseCapture = function(localPosition) {
                 nearestPosition = result.position;
                 nearestPosition.lineIndex = lineIndex;
                 min = result.distance;
+                    console.log(min);
             }
         }
     } else {
         var points = path.isoLine;
-        var result = getNearestPointOnPath(points, 3, position);
+        var result = getNearestPointOnPath(points, min, position);
         if (result) {
             nearestPosition = result.position;
             min = result.distance;
+                console.log(min);
         }
     }
 
-    // if (nearestPosition) {
-    //     var lineIndex = nearestPosition.lineIndex;
-    //     nearestPosition = view.FGLBase.LocalToScreen(nearestPosition);
-    //     nearestPosition.lineIndex = lineIndex;
-    // }
+
 
     // 应该在local空间中， 只有当需要画的时候才转换
     return nearestPosition;

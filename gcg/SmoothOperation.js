@@ -197,7 +197,7 @@ prototype.OnMouseCapture = function(localPosition) {
         }
     } else {
         var points = path.isoLine;
-        var result = getNearestPointOnPath(points, 3, position);
+        var result = getNearestPointOnPath(points, min, position);
         if (result) {
             nearestPosition = result.position;
             min = result.distance;
