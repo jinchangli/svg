@@ -161,7 +161,7 @@ $(function () {
     });
 
     $.ajax({
-        url: "json/geo.json",
+        url: "http://localhost:2665/api",
         cache: false,
         dataType: "json"
     }).done(function (data) {
@@ -175,7 +175,7 @@ $(function () {
             view.Paint();
         }
     }).fail(function (message) {
-        console.log(message);
+       alert("获取等值线数据失败");
     });
 
 });

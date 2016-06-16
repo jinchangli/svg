@@ -33,6 +33,7 @@ TGLView.prototype = {
     MinMove: null,
 
     LayerCtx: null,
+    PointSelectLayerCtx: null,
     SelectedPoints: null,
 
     constructor: function(canvas) {
@@ -75,16 +76,26 @@ TGLView.prototype = {
     CreateLayer: function() {
         var ctx = this.Canvas;
 
-        var newCanvas = $('<canvas class="clayer" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter($(ctx.canvas));
-        this.LayerCtx = newCanvas[0].getContext("2d");
+        var hoverCanvas = $('<canvas class="clayer" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter($(ctx.canvas));
+        this.LayerCtx = hoverCanvas[0].getContext("2d");
+
+        var PointSelectCanvas = $('<canvas class="clayer pointSelect" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter(hoverCanvas);
+        this.PointSelectLayerCtx = PointSelectCanvas[0].getContext("2d");
     },
     ClearOverlayers: function() {
         var ctx = this.Canvas;
         var size = ctx.canvas.getBoundingClientRect();
 
         this.LayerCtx.clearRect(0, 0, size.width, size.height);
+        this.PointSelectLayerCtx.clearRect(0, 0, size.width, size.height);
 
         this.SelectedPoints = [];
+    },
+    ClearHoverLayer: function() {
+        var ctx = this.Canvas;
+        var size = ctx.canvas.getBoundingClientRect();
+
+        this.LayerCtx.clearRect(0, 0, size.width, size.height);
     },
     ClearView: function() {
         var ctx = this.Canvas;
@@ -389,11 +400,13 @@ TGLView.prototype = {
         }
 
         // 如果这个点已经处于单击选中状态， 那么就忽略hover状态
-        var index = this.IsPointSelected(TPosition2D(x, y));
-        if (index != null) {
-            return;
-        }
-        console.log("设置hover " + x + "," + y);
+        // var index = this.IsPointSelected(TPosition2D(x, y));
+        // if (index != null) {
+        //     return;
+        // }
+
+        this.ClearHoverLayer();
+
         this.SetHighLightPoint(x, y);
     },
     ClearHoverPoint: function(x, y) {
@@ -409,8 +422,6 @@ TGLView.prototype = {
         if (index != null) {
             return;
         }
-
-        console.log("清空hover " + x + "," + y);
 
         this.FCapturedFlag = false;
         this.FCapturedPosition = null;
@@ -441,13 +452,18 @@ TGLView.prototype = {
         ctx.restore();
         //this.DeleteObject(SelectObject(pen));
     },
-    SetHighLightPoint: function(X, Y, color) {
+    SetHighLightPoint: function(X, Y, color, layer) {
         var localP = TPosition2D(X, Y);
         localP = view.FGLBase.LocalToScreen(localP);
         if (!color) {
             color = "red";
         }
         var ctx = this.LayerCtx;
+
+        if(layer){
+          ctx = layer;
+        }
+
         //var pen = this.SelectObject(dc, CreatePen(PS_SOLID, 0, 0x00FF0000)); //TBD HPEN
         ctx.beginPath();
         // ctx.rect(p.x - 2, p.y - 2, 5, 5);
@@ -458,11 +474,15 @@ TGLView.prototype = {
         ctx.fill();
     },
 
-    ClearHighLightPoint: function(X, Y) {
+    ClearHighLightPoint: function(X, Y, layer) {
         var localP = TPosition2D(X, Y);
         localP = view.FGLBase.LocalToScreen(localP);
 
         var ctx = this.LayerCtx;
+        if(layer){
+          ctx = layer;
+        }
+
         ctx.clearRect(localP.X - 4, localP.Y - 4, 9, 9);
     },
 
@@ -472,7 +492,7 @@ TGLView.prototype = {
         if (index != null) {
 
         } else {
-            this.SetHighLightPoint(localP.X, localP.Y, "blue");
+            this.SetHighLightPoint(localP.X, localP.Y, "blue", this.PointSelectLayerCtx);
             this.SelectedPoints.push(localP);
         }
     },
@@ -491,7 +511,7 @@ TGLView.prototype = {
             var point = points[i];
             var selectedIndex = this.IsPointSelected(localP);
             if (selectedIndex != null) {
-                this.ClearHighLightPoint(point.X, point.Y);
+                this.ClearHighLightPoint(point.X, point.Y, this.PointSelectLayerCtx);
 
                 this.SelectedPoints.splice(selectedIndex, 1);
             }
@@ -791,7 +811,7 @@ TGLView.prototype = {
         //var nearestPosition = this.GenCapturePosition(keys, position.X, position.Y);
 
             this.FMouseOperation.MouseDbClick(position);
-        
+
     },
     WMKeyDown: function(key, nkeys) {
         this.OnKey(key, nkeys, -1);

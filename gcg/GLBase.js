@@ -169,6 +169,9 @@ TGLBase.prototype = {
             for (var i = 0; i < notes.length; i++) {
                 var note = notes[i];
                 var position = note.position;
+                if(!note.position){
+                  continue;
+                }
                 var text = note.note;
                 var direction = note.direction;
                 ctx.save();
@@ -184,8 +187,12 @@ TGLBase.prototype = {
             }
         }
     },
-    GetColor: function(value) {
-        return value < 500 ? "#125F3D" : "#395F3D";
+    GetColor: function(line) {
+        if(line.isoColor){
+          return line.isoColor;
+        }
+
+        return "#000";
     },
 
     GLRegions: function(isoLines) {
@@ -206,7 +213,7 @@ TGLBase.prototype = {
                 continue;
             }
 
-            ctx.fillStyle = this.GetColor(isoValue);
+            ctx.fillStyle = this.GetColor(isoLines[index]);
 
             ctx.beginPath();
 
@@ -269,6 +276,9 @@ TGLBase.prototype = {
                 var direction = ele.direction;
                 var position = ele.position;
                 var text = ele.note;
+                if(!direction || !position || !text ){
+                  continue;
+                }
 
                 ctx.save();
 
@@ -325,7 +335,7 @@ TGLBase.prototype = {
             var startPoint = false;
             for (var pointIndex = 0; pointIndex < line.length; pointIndex++) {
                 var point = line[pointIndex];
-                if (point.isBound) {
+                if (point.B) {
                     startPoint = false;
                 } else {
                     if (startPoint) {
@@ -339,7 +349,7 @@ TGLBase.prototype = {
 
             var firstP = line[0];
             var lastP = line[line.length - 1]
-            if (!firstP.isBound && !lastP.isBound) {
+            if (!firstP.B && !lastP.B) {
                 ctx.moveTo(lastP.X, lastP.Y);
                 ctx.lineTo(firstP.X, firstP.Y);
             } // end of one line

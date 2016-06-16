@@ -164,7 +164,7 @@ var getNearestPointOnPath = function(points, min, target) {
   var nearsetPosition = null;
   for (var pointIndex = 0; pointIndex < points.length; pointIndex++) {
     var point = points[pointIndex];
-    if (point.isBound) {
+    if (point.B) {
       continue;
     }
 
@@ -215,7 +215,7 @@ var calculateNotesPosition = function(isoLine) {
 
     for (var j = 0; j < isoLine.isoLine.length - 1; j++) {
       var point = isoLine.isoLine[j];
-      if (point.isBound) {
+      if (point.B) {
         continue;
       }
 

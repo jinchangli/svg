@@ -101,7 +101,7 @@ prototype.OnMouseDown = function(keys, position) {
 
                 for (var pointIndex = points.length - 1; pointIndex >= 0; pointIndex--) {
                     var point = points[pointIndex % points.length];
-                    if (point.isBound) {
+                    if (point.B) {
                         continue;
                     }
 
@@ -122,7 +122,7 @@ prototype.OnMouseDown = function(keys, position) {
 
                 for (var pointIndex = points.length * 2 - 1; pointIndex >= 0; pointIndex--) {
                     var point = points[pointIndex % points.length];
-                    if (point.isBound) {
+                    if (point.B) {
                         continue;
                     }
 
@@ -164,7 +164,7 @@ prototype.OnMouseDbClick = function(localPosition) {
 
     for (var pointIndex = points.length - 1; pointIndex >= 0; pointIndex--) {
         var point = points[pointIndex % points.length];
-        if (point.isBound) {
+        if (point.B) {
             continue;
         }
 
