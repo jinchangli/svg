@@ -1,0 +1,111 @@
+<!doctype html>
+<html oncontextmenu="return false;">
+
+<head>
+    <title>WebGL Demo</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <!-- <script src="http://cdn.jsdelivr.net/walkway/0.0.5/walkway.min.js"></script> -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/sb-admin-2.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="css/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <link href="css/site.css" rel="stylesheet">
+    <link href="js/contextmenu/jquery.contextMenu.css" rel="stylesheet" type="text/css" />
+    <script src="js/jquery-1.12.3.min.js"></script>
+    <script src="js/contextmenu/jquery.contextMenu.js" type="text/javascript"></script>
+    <script src="js/contextmenu/jquery.ui.position.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+    <div id="wrapper">
+
+        <!-- Navigation -->
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="index.html">GCG 等值线系统</a>
+            </div>
+            <!-- /.navbar-header -->
+
+            <div class="nav navbar-top-links navbar-right">
+                <div style="float:right; padding-right: 30px;">
+                    <div>local position: <span id="localPosition"></span></div>
+                    <div>screen position: <span id="screenPosition"></span></div>
+                </div>
+            </div>
+            <!-- /.navbar-top-links -->
+
+            <div class="navbar-default sidebar" role="navigation">
+                <div class="sidebar-nav navbar-collapse">
+
+                </div>
+                <!-- /.sidebar-collapse -->
+            </div>
+            <!-- /.navbar-static-side -->
+        </nav>
+        <!-- Page Content -->
+        <div id="page-wrapper">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12">
+                      <div class="panel panel-default">
+                                             <div class="panel-heading">
+                                                 Basic Form Elements
+                                             </div>
+                                             <div class="panel-body">
+                                                 <div class="row">
+                                                     <div class="col-lg-6">
+                                                         <form role="form">
+                                                             <div class="form-group">
+                                                                 <label>    数据源</label>
+
+                                                                 <select class="form-control" name="dataSource">
+                                                                   <option> 数据源1 </option>
+                                                                   <option> 数据源2 </option>
+                                                                   <option> 数据源3 </option>
+                                                                 </select>
+
+                                                               </div>
+                                                               <div class="form-group">
+                                                                   <label>  差值算法</label>
+
+                                                                   <select class="form-control" name="dataSource">
+                                                                     <option> 算法1 </option>
+                                                                     <option> 算法2 </option>
+                                                                     <option> 算法3 </option>
+                                                                   </select>
+
+                                                                 </div>
+                                                                 <button type="submit" class="btn btn-default">确认</button>
+                                       <button type="reset" class="btn btn-default">重置</button>
+                                                             </form>
+                                                             </div>
+                                                           </div>
+                                                         </div>
+                                                       </div>
+
+
+
+
+
+                    </div>
+                    <!-- /.col-lg-12 -->
+                </div>
+                <!-- /.row -->
+            </div>
+            <!-- /.container-fluid -->
+        </div>
+        <!-- /#page-wrapper -->
+    </div>
+</body>
+
+</html>
