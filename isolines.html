@@ -18,6 +18,18 @@
     <script src="js/jquery-1.12.3.min.js"></script>
     <script src="js/contextmenu/jquery.contextMenu.js" type="text/javascript"></script>
     <script src="js/contextmenu/jquery.ui.position.min.js" type="text/javascript"></script>
+    <script src="gcg/utility.js"></script>
+    <script src="gcg/Math2D.js"></script>
+    <script src="gcg/Matrix2D.js"></script>
+    <script src="gcg/Bounds.js"></script>
+    <script src="gcg/GLBase.js"></script>
+    <script src="gcg/GLOperation.js"></script>
+    <script src="gcg/SmoothOperation.js"></script>
+    <script src="gcg/RedrawOperation.js"></script>
+    <script src="gcg/GLView.js"></script>
+    <script src="gcg/state.js"></script>
+    <!--<script src="js/gcg2.js"></script>-->
+    <script src="main.js"></script>
 </head>
 
 <body>
@@ -46,6 +58,34 @@
 
             <div class="navbar-default sidebar" role="navigation">
                 <div class="sidebar-nav navbar-collapse">
+                    <div class="operations">
+                        <div>
+                            <button type="button" class="zoomextent btn btn-primary" aria-haspopup="true" aria-expanded="false">重置视图</button>
+                        </div>
+                        <div>
+                            <button type="button" class="zoomin btn btn-primary" aria-haspopup="true" aria-expanded="false">放大</button>
+                            <button type="button" class="zoomout btn btn-primary" aria-haspopup="true" aria-expanded="false">缩小</button>
+
+                        </div>
+                        <div id="stateButtones">
+                            <div>
+                                <button type="button" class="smooth btn btn-primary" aria-haspopup="true" aria-expanded="false"> 平滑曲线 </button>
+
+                            </div>
+                            <div>
+
+                                <button type="button" class="cutPath btn btn-primary" aria-haspopup="true" aria-expanded="false">重画曲线</button>
+                            </div>
+                        </div>
+                        <div>
+
+                            <button type="button" class="save btn btn-primary" aria-haspopup="true" aria-expanded="false">保存</button>
+                        </div>
+
+                    </div>
+                    <div id="messageBox" style="height:50px;">
+
+                    </div>
 
                 </div>
                 <!-- /.sidebar-collapse -->
@@ -57,45 +97,19 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-lg-12">
-                      <div class="panel panel-default">
-                                             <div class="panel-heading">
-                                                 Basic Form Elements
-                                             </div>
-                                             <div class="panel-body">
-                                                 <div class="row">
-                                                     <div class="col-lg-6">
-                                                         <form role="form">
-                                                             <div class="form-group">
-                                                                 <label>    数据源</label>
+                        <div class="canvasContainer">
+                            <canvas id="canvas"></canvas>
+                        </div>
+                        <script>
+                            var c = $("#canvas");
+                            var height = $(window).height() - 100;
+                            var width = $(window).width() - 300;
 
-                                                                 <select class="form-control" name="dataSource">
-                                                                   <option> 数据源1 </option>
-                                                                   <option> 数据源2 </option>
-                                                                   <option> 数据源3 </option>
-                                                                 </select>
+                            c.attr("width", width);
+                            c.attr("height", height);
 
-                                                               </div>
-                                                               <div class="form-group">
-                                                                   <label>  差值算法</label>
-
-                                                                   <select class="form-control" name="dataSource">
-                                                                     <option> 算法1 </option>
-                                                                     <option> 算法2 </option>
-                                                                     <option> 算法3 </option>
-                                                                   </select>
-
-                                                                 </div>
-                                                                 <button type="submit" class="btn btn-default">确认</button>
-                                       <button type="reset" class="btn btn-default">重置</button>
-                                                             </form>
-                                                             </div>
-                                                           </div>
-                                                         </div>
-                                                       </div>
-
-
-
-
+                            c.parent().width(width).height(height);
+                        </script>
 
                     </div>
                     <!-- /.col-lg-12 -->
