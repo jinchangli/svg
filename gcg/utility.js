@@ -210,18 +210,24 @@ var calculateNotesPosition = function(isoLine) {
 
   for (var i = 0; i < notes.length; i++) {
     var note = notes[i];
+    if(!note.direction || !note.order || note.order<0){
+      continue;
+    }
 
     var validOrder = 0;
 
     for (var j = 0; j < isoLine.isoLine.length - 1; j++) {
       var point = isoLine.isoLine[j];
-      if (point.B) {
+      if (point.B ) {
         continue;
       }
 
       if (validOrder >= note.order) {
         var next = isoLine.isoLine[j + 1]
         note.direction = calculateDirection(TPosition2D(next.X, next.Y).sub(TPosition2D(point.X, point.Y)));
+        if(!note.position){
+          note.position = TPosition2D();
+        }
         note.position.X = (next.X + point.X) / 2;
         note.position.Y = (next.Y + point.Y) / 2;
         break;

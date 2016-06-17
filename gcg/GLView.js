@@ -103,7 +103,7 @@ TGLView.prototype = {
         ctx.clearRect(0, 0, size.width, size.height);
 
         this.LayerCtx.clearRect(0, 0, size.width, size.height);
-          this.PointSelectLayerCtx.clearRect(0, 0, size.width, size.height);
+        this.PointSelectLayerCtx.clearRect(0, 0, size.width, size.height);
 
         this.SelectedPoints = [];
     },
@@ -461,8 +461,8 @@ TGLView.prototype = {
         }
         var ctx = this.LayerCtx;
 
-        if(layer){
-          ctx = layer;
+        if (layer) {
+            ctx = layer;
         }
 
         //var pen = this.SelectObject(dc, CreatePen(PS_SOLID, 0, 0x00FF0000)); //TBD HPEN
@@ -480,8 +480,8 @@ TGLView.prototype = {
         localP = view.FGLBase.LocalToScreen(localP);
 
         var ctx = this.LayerCtx;
-        if(layer){
-          ctx = layer;
+        if (layer) {
+            ctx = layer;
         }
 
         ctx.clearRect(localP.X - 4, localP.Y - 4, 9, 9);
@@ -811,8 +811,8 @@ TGLView.prototype = {
         position = this.FGLBase.ScreenToLocal(position);
         //var nearestPosition = this.GenCapturePosition(keys, position.X, position.Y);
 
-            this.FMouseOperation.MouseDbClick(position);
-
+        this.FMouseOperation.MouseDbClick(position);
+        this.FDoubleClicked = false;
     },
     WMKeyDown: function(key, nkeys) {
         this.OnKey(key, nkeys, -1);

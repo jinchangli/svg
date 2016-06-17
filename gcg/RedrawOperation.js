@@ -3,6 +3,7 @@ var RedrawOperation = function() {
     this.constructor.apply(that, arguments);
     this.buildContextMenu();
     this.cacheData(clone(state.viewData));
+    this.userCanSelectPoint = true;
 }
 
 var prototype = RedrawOperation.prototype = new TGLOperation();
@@ -12,9 +13,10 @@ prototype.endPoint = null;
 prototype.newPoints = null;
 prototype.oldPoints = null;
 prototype.dataChangeConfirmed = false;
+prototype.userCanSelectPoint = null;
 
 prototype.buildContextMenu = function() {
-    var that = this;
+
     $.contextMenu({
         selector: '.cutPath',
         trigger: 'none',
@@ -27,22 +29,21 @@ prototype.buildContextMenu = function() {
         callback: function(key, options) {
             switch (key) {
                 case "apply":
-                    that.MouseOK();
+                    view.FMouseOperation.MouseOK();
                     break;
                 case "done":
                     {
-                        that.dataChangeConfirmed = true;
-                        that.MouseOK();
-                        that.OnMouseCancel();
+                        view.FMouseOperation.dataChangeConfirmed = true;
+                        view.FMouseOperation.MouseOK();
                         view.MouseOperation(null);
                         break;
                     }
                 case "cancel":
-                    that.MouseCancel();
+                    view.FMouseOperation.MouseCancel();
                     break;
                 case "quit":
                     {
-                        that.MouseCancel();
+                        view.FMouseOperation.MouseCancel();
                         view.MouseOperation(null);
                         break;
                     }
@@ -94,6 +95,11 @@ prototype.drawLines = function(newPosition) {
 }
 
 prototype.OnMouseDown = function(keys, position) {
+    // 如果已经选择了一组点，那么用户就不能再选择新的点了，除非取消前面的选择
+    if (!this.userCanSelectPoint) {
+        return;
+    }
+
     // find the nearest point first
     var view = this.FGLView;
     var nearestPosition = this.OnMouseCapture(position);
@@ -119,6 +125,7 @@ prototype.OnMouseDown = function(keys, position) {
         else {
             position = this.endPoint = nearestPosition;
             this.redrawState = false;
+            this.userCanSelectPoint = false;
             this.drawLines(position);
         }
     }
@@ -155,7 +162,7 @@ prototype.OnMouseCapture = function(localPosition) {
                 nearestPosition = result.position;
                 nearestPosition.lineIndex = lineIndex;
                 min = result.distance;
-                    console.log(min);
+                console.log(min);
             }
         }
     } else {
@@ -164,7 +171,7 @@ prototype.OnMouseCapture = function(localPosition) {
         if (result) {
             nearestPosition = result.position;
             min = result.distance;
-                console.log(min);
+            console.log(min);
         }
     }
 
@@ -243,13 +250,14 @@ prototype.OnMouseOK = function() {
 
     path.isoLine = newPathPoints;
     //repaint the whole view
-    this.newPoints = [];
-    view.ClearOverlayers();
 
     calculateNotesPosition(path);
+
     view.Paint();
 
     state.clearSelectedState();
+
+    this.OnMouseCancel();
 }
 
 prototype.OnMouseUndo = function() {
@@ -279,6 +287,8 @@ prototype.OnMouseUndo = function() {
 
 prototype.OnMouseCancel = function() {
     this.FGLView.ClearOverlayers();
+    this.newPoints = [];
+    this.userCanSelectPoint = true;
 }
 
 prototype.OnMouseEnd = function() {
