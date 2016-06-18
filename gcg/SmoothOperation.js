@@ -100,7 +100,7 @@ prototype.OnMouseDown = function(keys, position) {
             }
 
             var start = result.start;
-            var end = result.end;
+            var end = (result.end+1)%points.length;
 
             this.selectedPoints = [];
             for(var i=start; i!=end; i= (i+1)%points.length){
@@ -133,15 +133,38 @@ prototype.OnMouseDbClick = function(localPosition) {
 
     var path = state.getSelectedPath();
     var points = path.isoLine;
+    var start = (nearestPosition.pointIndex+1)%points.length;
+    var end = nearestPosition.pointIndex;
 
-    for (var pointIndex = points.length - 1; pointIndex >= 0; pointIndex--) {
+    for (var pointIndex = start; pointIndex != end ; pointIndex = (pointIndex+1)%points.length) {
         var point = points[pointIndex % points.length];
         if (point.B) {
-            continue;
+            break;
         }
 
         view.DrawSelectedPoint(point);
+            this.selectedPointEndIndex = pointIndex;
     }
+
+    if(pointIndex != end){
+      start = (nearestPosition.pointIndex - 1 + points.length)%points.length;
+      end = nearestPosition.pointIndex;
+      for (var pointIndex = start; pointIndex != end ; pointIndex = (pointIndex-1)%points.length) {
+          var point = points[pointIndex % points.length];
+          if (point.B) {
+              break;
+          }
+
+          view.DrawSelectedPoint(point);
+          this.selectedPointStartIndex = pointIndex;
+      }
+
+    }else{
+        this.selectedPointStartIndex = 0;
+        this.selectedPointEndIndex = points.length-1;
+    }
+
+    this.smoothWholePath = true;
 }
 
 prototype.OnMouseCapture = function(localPosition) {
@@ -197,27 +220,44 @@ prototype.OnMouseOK = function() {
 
     if (path) {
         var points = path.isoLine;
-        var result = adjustSelectedPointsOrder(points, this.selectedPointStartIndex, this.selectedPointEndIndex);
+        var start, end;
+        if(this.smoothWholePath){
+           start  =this.selectedPointStartIndex;
+           end = this.selectedPointEndIndex;
+           for(var i=start; i<=end; i++){
+             var point = points[i];
+             var newPoint = clone(point);
 
-        if(result == null){
-          return;
-        }
+             var last = (i - 1 + points.length) % points.length;
+             var next = (i + 1) % points.length;
 
-        var start = result.start;
-        var end = result.end;
+                 newPoint.X = (points[last].X + 2 * point.X + points[next].X) / 4;
+                 newPoint.Y = (points[last].Y + 2 * point.Y + points[next].Y) / 4;
+                 selectedPoints.push(newPoint);
 
-        for(var i=start; i!=end; i= (i+1)%points.length){
-          var point = points[i];
-          var newPoint = clone(point);
+            points[i] = newPoint;
+           }
+        }else{
+          var result = adjustSelectedPointsOrder(points, this.selectedPointStartIndex, this.selectedPointEndIndex);
+          if(result == null){
+            return;
+          }
 
-          var last = (i - 1 + points.length) % points.length;
-          var next = (i + 1) % points.length;
+          start = result.start;
+          end = (result.end + 1)%points.length;
+          for(var i=start; i!=end; i= (i+1)%points.length){
+            var point = points[i];
+            var newPoint = clone(point);
 
-              newPoint.X = (points[last].X + 2 * point.X + points[next].X) / 4;
-              newPoint.Y = (points[last].Y + 2 * point.Y + points[next].Y) / 4;
-              selectedPoints.push(newPoint);
+            var last = (i - 1 + points.length) % points.length;
+            var next = (i + 1) % points.length;
 
-         points[i] = newPoint;
+            newPoint.X = (points[last].X + 2 * point.X + points[next].X) / 4;
+            newPoint.Y = (points[last].Y + 2 * point.Y + points[next].Y) / 4;
+            selectedPoints.push(newPoint);
+
+            points[i] = newPoint;
+          }
         }
     }
 

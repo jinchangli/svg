@@ -268,7 +268,7 @@ var adjustSelectedPointsOrder = function(points, startIndex, endIndex) {
       break;
     }
 
-    pOrderLength ++;
+    nOrderLength ++;
   }
 
   if(pOrderLength>=0 && nOrderLength >= 0){
