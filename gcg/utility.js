@@ -173,6 +173,7 @@ var getNearestPointOnPath = function(points, min, target) {
     if (distance < min) {
       min = distance;
       nearsetPosition = pointCoor;
+      nearsetPosition.pointIndex = pointIndex;
     }
   }
 
@@ -242,43 +243,74 @@ var calculateDirection = function(vector) {
   return Math.atan2(vector.Y, vector.X);
 }
 
-var cutOffShorterPart = function(points, isStart, isEnd) {
+var adjustSelectedPointsOrder = function(points, startIndex, endIndex) {
+  if (!points || points.length == 0) {
+    return null;
+  }
+
+  var pOrderLength = 0;
+  var n = points.length;
+  for(var i = startIndex; i!=endIndex; i =(i+1)%n){
+    var p = points[i];
+    if(p.B){
+      pOrderLength = -1
+      break;
+    }
+
+    pOrderLength ++;
+  }
+
+  var nOrderLength = 0;
+  for(var i = startIndex; i!=endIndex; i =(i-1+n)%n){
+    var p = points[i];
+    if(p.B){
+      nOrderLength=-1
+      break;
+    }
+
+    pOrderLength ++;
+  }
+
+  if(pOrderLength>=0 && nOrderLength >= 0){
+      if(pOrderLength<nOrderLength){
+
+      }else{
+          var temp = startIndex;
+          startIndex = endIndex;
+          endIndex = temp;
+      }
+
+
+  }else if(pOrderLength>=0){
+
+  }else if(nOrderLength >= 0){
+    var temp = startIndex;
+    startIndex = endIndex;
+    endIndex = temp;
+  }else{
+    return null;
+  }
+
+  return {start: startIndex, end: endIndex};
+}
+
+var cutOffShorterPart = function(points, startIndex, endIndex) {
+  points = clone(points);
 
   if (!points || points.length == 0) {
     return null;
   }
-  points = clone(points);
-  var startIndex = -1;
-  var endIndex = -1;
 
-  var length = 2 * points.length;
-  var flag = 1;
-  for (var i = 0; i < length; i++) {
-    var index = i % points.length;
-    var p = points[index];
-    if (flag == 1) {
-      if (isStart(p)) {
-        flag = 2;
-        startIndex = index;
-      }
-    }
+  var result = adjustSelectedPointsOrder(points, startIndex, endIndex);
 
-    if (flag == 2) {
-      if (isEnd(p)) {
-        flag = 3;
-        endIndex = index;
-        break;
-      }
-    }
+  if(result == null){
+    return null;
   }
 
-  if (startIndex > endIndex) {
-    var temp = startIndex;
-    startIndex = endIndex;
-    endIndex = temp;
-  }
+  startIndex = result.start;
+  endIndex = result.end;
 
-  if ((endIndex - startIndex) > (points.length / 2)) {
+  if (startIndex>endIndex) {
     return points.slice(startIndex, endIndex+1);
   } else {
     return {

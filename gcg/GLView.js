@@ -548,6 +548,15 @@ TGLView.prototype = {
     HasSelectedPoint: function() {
         return this.SelectedPoints != null && this.SelectedPoints.length > 0;
     },
+    GetFirstSelectedPoint: function() {
+        var result = null;
+        if (this.SelectedPoints == null || this.SelectedPoints.length == 0) {
+            return result;
+        }
+
+        result = this.SelectedPoints[0];
+        return result;
+    },
     GetLastSelectedPoint: function() {
         var result = null;
         if (this.SelectedPoints == null || this.SelectedPoints.length == 0) {

@@ -4,11 +4,16 @@ var SmoothOperation = function() {
     this.constructor.apply(that, arguments);
     this.buildContextMenu();
     this.cacheData(clone(state.viewData));
+    this.selectedPoints = [];
 }
+
 
 var prototype = SmoothOperation.prototype = new TGLOperation();
 
 prototype.dataChangeConfirmed = false;
+prototype.selectedPoints = null;
+prototype.selectedPointStartIndex = null;
+prototype.selectedPointEndIndex = null;
 
 prototype.buildContextMenu = function() {
     var that = this;
@@ -73,6 +78,7 @@ prototype.OnMouseDown = function(keys, position) {
     if (nearestPosition) {
         //清楚当前点的hover状态
         view.ClearHoverPoint(nearestPosition.X, nearestPosition.Y);
+        this.FGLView.ClearOverlayers();
 
         if (nearestPosition.lineIndex >= 0) { // means a new line is selected
             var lineIndex = nearestPosition.lineIndex;
@@ -81,67 +87,33 @@ prototype.OnMouseDown = function(keys, position) {
 
 
         // if there is selected points
-        if (view.HasSelectedPoint()) {
-            var index = view.IsPointSelected(nearestPosition);
-            if (index != null) {
-                //if the point was selected, we need to unselect all the points between the last selected point and the current ones
+        if (this.selectedPoints.length > 0) {
+          var path = state.getSelectedPath();
+          var points = path.isoLine;
 
-                if (index == 0) {
-                    // if this the very first point, unselect all of the points
-                    view.UnDrawAllPoints();
-                    return;
-                }
+            var currentPosition = nearestPosition;
 
+            var result = adjustSelectedPointsOrder(points, this.selectedPointStartIndex, currentPosition.pointIndex);
 
-                var current = nearestPosition;
-
-                var points = clone(view.SelectedPoints);
-
-                var needSelect = false;
-
-                for (var pointIndex = points.length - 1; pointIndex >= 0; pointIndex--) {
-                    var point = points[pointIndex % points.length];
-                    if (point.B) {
-                        continue;
-                    }
-
-                    if (current.X == point.X && current.Y == point.Y) {
-                        break;
-                    }
-
-                    view.UnDrawSelectedPoint(point);
-                }
-            } else {
-                //if the point was not selected, we need to add all the points between the selected ones and the new one to be selected
-                var lastSelectedPoint = view.GetLastSelectedPoint();
-                var current = nearestPosition;
-                var path = state.getSelectedPath();
-                var points = path.isoLine;
-
-                var needSelect = false;
-
-                for (var pointIndex = points.length * 2 - 1; pointIndex >= 0; pointIndex--) {
-                    var point = points[pointIndex % points.length];
-                    if (point.B) {
-                        continue;
-                    }
-
-                    if (!needSelect) {
-                        if (lastSelectedPoint.X == point.X && lastSelectedPoint.Y == point.Y) {
-                            view.DrawSelectedPoint(point);
-                            needSelect = true;
-                        }
-                    } else {
-                        view.DrawSelectedPoint(point);
-                        if (current.X == point.X && current.Y == point.Y) {
-                            break;
-                        }
-                    }
-                }
+            if(result == null){
+              return;
             }
+
+            var start = result.start;
+            var end = result.end;
+
+            this.selectedPoints = [];
+            for(var i=start; i!=end; i= (i+1)%points.length){
+              view.DrawSelectedPoint(points[i]);
+              this.selectedPoints.push(points[i]);
+            }
+
+            this.selectedPointEndIndex = currentPosition.pointIndex;
         } else {
             // 将当前最近点置于选中状态
             view.DrawSelectedPoint(nearestPosition);
+            this.selectedPoints.push(nearestPosition);
+            this.selectedPointStartIndex = nearestPosition.pointIndex;
         }
     }
 }
@@ -225,26 +197,28 @@ prototype.OnMouseOK = function() {
 
     if (path) {
         var points = path.isoLine;
-        var newPoints = [];
+        var result = adjustSelectedPointsOrder(points, this.selectedPointStartIndex, this.selectedPointEndIndex);
 
-        for (var i = 0; i < points.length; i++) {
-            var point = points[i];
-            var newPoint = clone(point);
-
-            var last = (i - 1 + points.length) % points.length;
-            var next = (i + 1) % points.length;
-
-            var index = view.IsPointSelected(point);
-            if (index != null) {
-                newPoint.X = (points[last].X + 2 * point.X + points[next].X) / 4;
-                newPoint.Y = (points[last].Y + 2 * point.Y + points[next].Y) / 4;
-                selectedPoints.push(newPoint);
-            }
-
-            newPoints.push(newPoint);
+        if(result == null){
+          return;
         }
 
-        path.isoLine = newPoints;
+        var start = result.start;
+        var end = result.end;
+
+        for(var i=start; i!=end; i= (i+1)%points.length){
+          var point = points[i];
+          var newPoint = clone(point);
+
+          var last = (i - 1 + points.length) % points.length;
+          var next = (i + 1) % points.length;
+
+              newPoint.X = (points[last].X + 2 * point.X + points[next].X) / 4;
+              newPoint.Y = (points[last].Y + 2 * point.Y + points[next].Y) / 4;
+              selectedPoints.push(newPoint);
+
+         points[i] = newPoint;
+        }
     }
 
     calculateNotesPosition(path);
@@ -258,6 +232,7 @@ prototype.OnMouseOK = function() {
 
 prototype.OnMouseCancel = function() {
     this.FGLView.ClearOverlayers();
+    this.selectedPoints = [];
     state.clearSelectedState();
 }
 

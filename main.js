@@ -161,7 +161,8 @@ $(function () {
     });
 
     $.ajax({
-        url: "http://localhost:2665/api",
+      url: "json/geo.json",
+        // url: "http://localhost:2665/api",
         cache: false,
         dataType: "json"
     }).done(function (data) {

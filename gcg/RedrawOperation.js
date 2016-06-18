@@ -197,12 +197,7 @@ prototype.OnMouseOK = function() {
     var newPathEnd = this.newPoints[this.newPoints.length - 1];
 
     // find the shortest path between startPoint and endPoint
-    var remainParts = cutOffShorterPart(path.isoLine, function(point) {
-            return point.X == newPathStart.X && point.Y == newPathStart.Y;
-        },
-        function(point) {
-            return point.X == newPathEnd.X && point.Y == newPathEnd.Y;
-        })
+    var remainParts = cutOffShorterPart(path.isoLine, newPathStart.pointIndex, newPathEnd.pointIndex)
 
     // replace these points with newPoints
     if (!remainParts) {
