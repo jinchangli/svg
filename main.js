@@ -230,7 +230,7 @@ $(function() {
     //   }
     // }
 
-    $.post({
+    $.get({
          url: "json/geo2.json",
         //url: "http://localhost:2665/api",
         data: {
