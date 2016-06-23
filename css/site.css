@@ -1,34 +1,104 @@
 .operButtons {
     margin-top: 20px;
 }
-#operationButtons>button.selected {
-  color: #fff;
- background-color: #d9534f;
- border-color: #d43f3a;
+.operations button {
+    width: 100px;
 }
-
-.btn-default:focus,
-.btn-default.focus,
-.btn-default {
-  color: #333;
-  background-color: #fff;
-  border-color: #ccc;
+#stateButtones button.selected {
+    color: #fff;
+    background-color: #d9534f;
+    border-color: #d43f3a;
 }
-
-.btn:focus,
-.btn:active:focus,
-.btn.active:focus,
-.btn.focus,
-.btn:active.focus,
-.btn.active.focus {
-  outline: none;
-  outline: none;
-  outline-offset: -2px;
+.btn-default:focus, .btn-default.focus, .btn-default {
+    color: #333;
+    background-color: #fff;
+    border-color: #ccc;
 }
-
-#canvas{
-  /*height: 500px;
+.btn:focus, .btn:active:focus, .btn.active:focus, .btn.focus, .btn:active.focus, .btn.active.focus {
+    outline: none;
+    outline: none;
+    outline-offset: -2px;
+}
+.canvasContainer {
+    position: relative;
+}
+.canvasContainer>canvas {
+    /*height: 500px;
   width: 800px;*/
-  border: 1px solid black;
-  margin-left: 50px;
+    /*border: 1px solid black;*/
+    margin-left: -40px;
+    position: absolute;
+    left: 20px;
+    top: 20px;
+}
+#OutsideLayer {
+    left: 0;
+    top: 0;
+}
+.operations>div {
+    margin: 10px;
+    max-width: 250px;
+}
+#stateButtones>div {
+    margin-bottom: 10px;
+    max-width: 250px;
+}
+#colorLegend {
+    position: fixed;
+    left: 140px;
+    bottom: 47px;
+    width: 200px;
+}
+#colorLegend>.item {
+    height: 15px;
+    position: relative;
+}
+#colorLegend .text {
+    position: absolute;
+    bottom: -10px;
+    width: 80px;
+    text-align: right;
+    padding-right: 5px;
+    font-size: 8px;
+    font-family: initial;
+}
+#colorLegend .color {
+    margin-left: 80px;
+    border: 1px solid black;
+    width: 20px;
+    height: 15px;
+    border-bottom-width: 0;
+}
+#colorLegend>.item:last-child>.color {
+    border-bottom-width: 1px;
+}
+#colorLegend>.item:first-child>.color {
+    display: none;
+}
+.isoLinesTitle {
+    position: absolute;
+    left: 50%;
+    margin-left: 0px;
+    margin-top: 10px;
+    width: 300px;
+    height: 30px;
+    font-size: 18px;
+    line-height: 30px;
+    border: 1px solid black;
+    text-align: center;
+}
+#wellsOptions {
+    margin-top: 10px;
+    display: none;
+}
+#wellsOptions .fa {
+    visibility: hidden;
+}
+#wellsOptions>.active>.fa {
+    visibility: visible;
+}
+
+#wellNameEditor{
+  display: none;
+  position: absolute;
 }

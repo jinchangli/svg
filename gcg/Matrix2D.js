@@ -32,7 +32,7 @@ TMatrix2D.prototype = {
         this.A01 = this.A10 = 0;
         this.A02 = this.A12 = 0;
     },
-    Transform: function (b00, b01, b02, b10, b11, b12) {
+    Transform: function (b00, b01, b10, b11, b02, b12) {
         var t0 = this.A00 * b00 + this.A01 * b10;
         var t1 = this.A00 * b01 + this.A01 * b11;
         this.A02 += this.A00 * b02 + this.A01 * b12;

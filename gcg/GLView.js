@@ -32,10 +32,19 @@ TGLView.prototype = {
     MouseMoveModelPosition: null,
     MinMove: null,
 
-    Points: null,
+    OutsideLayer: null,
+    WellsLayer: null,
+    BoundLayer: null,
+    FaultsLayer: null,
+    LayerCtx: null,
+    LinesLayer:null,
+    NotesLayer:null,
+    PointSelectLayerCtx: null,
+    SelectedPoints: null,
 
     constructor: function(canvas) {
         with(this) {
+            PointsWithMarks = [];
             Canvas = canvas;
             FGLBase = new TGLBase(canvas, this);
             MouseDownPosition = TPosition2D();
@@ -61,13 +70,80 @@ TGLView.prototype = {
             FViewChanged = false;
             AllowCapture = false;
 
-            Points = [];
+            SelectedPoints = [];
+
         }
+
+        this.CreateLayer();
     },
     destruction: function(params) {
         this.FGLBase = null;
     },
+    CreateLayer: function() {
+        var ctx = this.Canvas;
 
+        var wellsCanvas = $('<canvas class="clayer wells" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter($("#OutsideLayer"));
+        this.WellsLayer = wellsCanvas[0].getContext("2d");
+
+        var hoverCanvas = $('<canvas class="clayer" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter(wellsCanvas);
+        this.LayerCtx = hoverCanvas[0].getContext("2d");
+
+        var PointSelectCanvas = $('<canvas class="clayer pointSelect" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter(hoverCanvas);
+        this.PointSelectLayerCtx = PointSelectCanvas[0].getContext("2d");
+
+        var boundLayer = $('<canvas class="clayer borders" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter(PointSelectCanvas);
+        this.BoundLayer = boundLayer[0].getContext("2d");
+
+        var faultsLayer = $('<canvas class="clayer faults" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter(boundLayer);
+        this.FaultsLayer = faultsLayer[0].getContext("2d");
+
+        this.OutsideLayer = $("#OutsideLayer")[0].getContext("2d");
+    },
+    DrawWells: function() {
+
+
+    },
+    DrawWell: function(well) {
+        var ctx = this.WellsLayer;
+
+        ctx.beiginPath();
+
+
+    },
+    DrawBounds: function() {
+
+    },
+    ClearOverlayers: function() {
+        var ctx = this.Canvas;
+        var size = ctx.canvas.getBoundingClientRect();
+
+        this.LayerCtx.clearRect(0, 0, size.width, size.height);
+        this.PointSelectLayerCtx.clearRect(0, 0, size.width, size.height);
+
+        this.SelectedPoints = [];
+    },
+    ClearHoverLayer: function() {
+        var ctx = this.Canvas;
+        var size = ctx.canvas.getBoundingClientRect();
+
+        this.LayerCtx.clearRect(0, 0, size.width, size.height);
+    },
+    ClearView: function() {
+        var ctx = this.Canvas;
+        var size = ctx.canvas.getBoundingClientRect();
+        ctx.clearRect(0, 0, size.width, size.height);
+        var allCanvas = $("canvas.clayer");
+        allCanvas.each(function(index, ele) {
+            var ctx = ele.getContext("2d");
+
+            ctx.clearRect(0, 0, size.width, size.height);
+        });
+
+        var size2 = this.OutsideLayer.canvas.getBoundingClientRect();
+        this.OutsideLayer.clearRect(0, 0, size2.width, size2.height);
+
+        this.SelectedPoints = [];
+    },
     //事件
     OnInitializeView: null, //OnInitializeView
     OnMousePosition: null, //OnMousePosition(position)
@@ -221,31 +297,31 @@ TGLView.prototype = {
             this.FMouseOperation.MouseCommand(command, state);
     },
 
-    MoveViewMouseMove: function(dc, keys, position, downflag) {
+    MoveViewMouseMove: function(keys, position, downflag) {
         if (downflag)
             this.ProcessMoveView(this.MouseMovePosition, position);
     },
-    ZoomInMouseUp: function(dc, keys, position) {
+    ZoomInMouseUp: function(keys, position) {
         if (this.FGLBase && this.FGLBase.ZoomIn(center)) {
             this.ViewChanged(true);
             this.Invalidate();
         }
         this.ViewZoomed();
     },
-    ZoomOutMouseUp: function(dc, keys, position) {
+    ZoomOutMouseUp: function(keys, position) {
         if (this.FGLBase && this.FGLBase.ZoomOut(position)) {
             this.ViewChanged(true);
             this.Invalidate();
         }
         this.ViewZoomed();
     },
-    ZoomRectMouseUp: function(dc, keys, position) {
+    ZoomRectMouseUp: function(keys, position) {
         if (position.sub(this.MouseDownPosition).abs() >= 10)
             this.ZoomViewRect(this.TInterval2D(this.MouseDownPosition, position));
     },
-    ZoomViewMouseMove: function(dc, keys, position, downflag) {
+    ZoomViewMouseMove: function(keys, position, downflag) {
         if (downflag)
-            this.ProcessZoomView(this.MouseMovePosition, position);
+            this.ProcessZoomView(this.MouseMovePosition, position, downflag);
     },
 
     MouseOperation0: function(operation) {
@@ -295,8 +371,10 @@ TGLView.prototype = {
         if (arguments.length <= 2) {
             flag = false;
         }
-        if (from != to)
+        if (!from.is_eql(to)) {
             this.MoveView(flag ? from.add(to).mul(0.5) : from, to); // TBD: TPosition2D, add, divide
+            this.Paint();
+        }
     },
 
     BeginTemporaryOperation: function() {
@@ -309,60 +387,224 @@ TGLView.prototype = {
         ////this.SetCursor(0);
     },
 
-    ProcessZoomView: function(from, to) {
+    ProcessZoomView: function(from, to, flag) {
         var d = to.Y - from.Y;
-        if (d !== 0)
+        if (d !== 0) {
             this.ZoomView(Exp(d / (flag ? 200 : 100)));
+            this.Paint();
+        }
     },
 
     GenCapturePosition: function(keys, x, y) {
-        if (this.FCapturedFlag)
-          {
-             this.DrawCapturedPoint();
-          }
+        // // (x, y) is in screen space
+        // if (this.FCapturedFlag) {
+        //     this.DrawCapturedPoint();
+        // }
 
-        var point = {
-            x: x,
-            y: y
-        };
-
-        var mouse_position = TPosition2D(x,y); //this.ScreenToView(point);
+        var mouse_position = TPosition2D(x, y); //this.ScreenToView(point);
 
         if (this.AllowCapture && this.FEnableCapture && this.FMouseOperation) {
             this.FCapturedFlag = false;
             var captured_position = this.FMouseOperation.MouseCapture2D(this.FGLBase, mouse_position);
 
-            if(!captured_position){
-              captured_position = this.FMouseOperation.MouseCapture(mouse_position);
+            if (!captured_position) {
+                captured_position = this.FMouseOperation.MouseCapture(mouse_position);
             }
 
             if (captured_position) {
-                this.FCapturedPosition = mouse_position = captured_position;
+                if (this.FCapturedPosition != null && captured_position.X == this.FCapturedPosition.X && captured_position.Y == this.FCapturedPosition.Y) {
+                    this.FCapturedPosition = mouse_position = captured_position;
+                } else {
+                    this.FCapturedPosition = mouse_position = captured_position;
+                    this.DrawCapturedPoint();
+                }
                 this.FCapturedFlag = true;
+            } else {
+                if (this.FCapturedPosition) {
+                    this.ClearHoverPoint();
+                }
             }
         }
-        if (this.FCapturedFlag)
-            this.DrawCapturedPoint();
+
         return mouse_position;
     },
-    DrawCapturedPoint: function() {
-        var p = { x: this.FCapturedPosition.X, y: this.FCapturedPosition.Y};
+    DrawCapturedPoint: function(x, y) {
+        if (x == undefined || x == null) {
+            x = this.FCapturedPosition.X;
+        }
+
+        if (y == undefined || y == null) {
+            y = this.FCapturedPosition.Y;
+        }
+
+        // 如果这个点已经处于单击选中状态， 那么就忽略hover状态
+        // var index = this.IsPointSelected(TPosition2D(x, y));
+        // if (index != null) {
+        //     return;
+        // }
+
+        this.ClearHoverLayer();
+
+        this.SetHighLightPoint(x, y);
+    },
+    ClearHoverPoint: function(x, y) {
+        if ((x == undefined || x == null) && (y == undefined || y == null)) {
+            if (this.FCapturedPosition) {
+                x = this.FCapturedPosition.X;
+                y = this.FCapturedPosition.Y;
+            }
+        }
+
+        // 如果这个点已经处于单击选中状态， 那么就忽略hover状态
+        var index = this.IsPointSelected(TPosition2D(x, y));
+        if (index != null) {
+            return;
+        }
+
+        this.FCapturedFlag = false;
+        this.FCapturedPosition = null;
+        this.ClearHighLightPoint(x, y);
+    },
+    ToggleHighLightPoint: function(X, Y, color, show) {
         //var rop2 = this.SetROP2(dc, R2_XORPEN);
-        var ctx = this.Canvas;
+        var modelP = TPosition2D(X, Y);
+        modelP = view.FGLBase.ModelToScreen(modelP);
+
+        if (!color) {
+            color = "red";
+        }
+
+        var ctx = this.LayerCtx;
         ctx.save();
-        this.Canvas.globalCompositeOperation = "xor";
+
+        ctx.globalCompositeOperation = "xor";
         //var pen = this.SelectObject(dc, CreatePen(PS_SOLID, 0, 0x00FF0000)); //TBD HPEN
         ctx.beginPath();
-        ctx.rect(p.x - 2, p.y -2, 5, 5);
-        ctx.fill();
+        // ctx.rect(p.x - 2, p.y - 2, 5, 5);
+        // ctx.fill();
         //ctx.closePath();
-        ctx.rect(p.x-4, p.y-4, 9, 9);
+        ctx.fillStyle = color;
+        ctx.rect(modelP.X - 4, modelP.Y - 4, 9, 9);
         ctx.fill();
 
         ctx.restore();
         //this.DeleteObject(SelectObject(pen));
     },
+    SetHighLightPoint: function(X, Y, color, layer) {
+        var modelP = TPosition2D(X, Y);
+        modelP = view.FGLBase.ModelToScreen(modelP);
+        if (!color) {
+            color = "red";
+        }
+        var ctx = this.LayerCtx;
 
+        if (layer) {
+            ctx = layer;
+        }
+        ctx.save();
+        //var pen = this.SelectObject(dc, CreatePen(PS_SOLID, 0, 0x00FF0000)); //TBD HPEN
+        ctx.beginPath();
+        // ctx.rect(p.x - 2, p.y - 2, 5, 5);
+        // ctx.fill();
+        //ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.rect(modelP.X - 4, modelP.Y - 4, 9, 9);
+        ctx.fill();
+
+        ctx.restore();
+    },
+
+    ClearHighLightPoint: function(X, Y, layer) {
+        var modelP = TPosition2D(X, Y);
+        modelP = view.FGLBase.ModelToScreen(modelP);
+
+        var ctx = this.LayerCtx;
+        if (layer) {
+            ctx = layer;
+        }
+
+        ctx.clearRect(modelP.X - 4, modelP.Y - 4, 9, 9);
+    },
+
+    DrawSelectedPoint: function(modelP) {
+        this.FCapturedFlag = false;
+        var index = this.IsPointSelected(modelP);
+        if (index != null) {
+
+        } else {
+            this.SetHighLightPoint(modelP.X, modelP.Y, "blue", this.PointSelectLayerCtx);
+            this.SelectedPoints.push(modelP);
+        }
+    },
+
+    UnDrawSelectedPoint: function(modelP) {
+        if (this.SelectedPoints == null || this.SelectedPoints.length == 0) {
+            return;
+        }
+
+        var points = [modelP];
+        if (modelP instanceof Array) {
+            points = modelP;
+        }
+
+        for (var i = 0; i < points.length; i++) {
+            var point = points[i];
+            var selectedIndex = this.IsPointSelected(modelP);
+            if (selectedIndex != null) {
+                this.ClearHighLightPoint(point.X, point.Y, this.PointSelectLayerCtx);
+
+                this.SelectedPoints.splice(selectedIndex, 1);
+            }
+        }
+    },
+    UnDrawAllPoints: function() {
+        var points = this.SelectedPoints;
+
+        for (var i = 0; i < points.length; i++) {
+            var point = points[i];
+            this.ClearHighLightPoint(point.X, point.Y);
+        }
+
+        this.SelectedPoints = [];
+    },
+    IsPointSelected: function(modelP) {
+        var result = null;
+        if (this.SelectedPoints == null || this.SelectedPoints.length == 0) {
+            return result;
+        }
+
+        for (var i = 0; i < this.SelectedPoints.length; i++) {
+            var point = this.SelectedPoints[i];
+            if (point.X == modelP.X && point.Y == modelP.Y) {
+                result = i;
+                break;
+            }
+        }
+
+        return result;
+    },
+
+    HasSelectedPoint: function() {
+        return this.SelectedPoints != null && this.SelectedPoints.length > 0;
+    },
+    GetFirstSelectedPoint: function() {
+        var result = null;
+        if (this.SelectedPoints == null || this.SelectedPoints.length == 0) {
+            return result;
+        }
+
+        result = this.SelectedPoints[0];
+        return result;
+    },
+    GetLastSelectedPoint: function() {
+        var result = null;
+        if (this.SelectedPoints == null || this.SelectedPoints.length == 0) {
+            return result;
+        }
+
+        result = this.SelectedPoints[this.SelectedPoints.length - 1];
+        return result;
+    },
     ProcessMouseDown0: function(event, position) {
         var flags = GetMouseKeys(event);
         if (!this.FMouseLeftButtonDown && !this.FMouseMiddleButtonDown && !this.FMouseRightButtonDown) {
@@ -409,8 +651,12 @@ TGLView.prototype = {
         return false;
 
     },
-    ProcessMouseMove0: function(event, position) {
-        var flags = GetMouseKeys(event);
+    GetCursor: function() {
+
+    },
+    ProcessMouseMove0: function(keys, position) {
+        var flags = GetMouseKeys(keys);
+        //  console.log("flags.left ="+ flags.left);
         if (this.FMouseRightButtonDown) {
             if (!flags.left && !flags.middle) {
                 var flag = (flags.shift ? 1 : 0) + (flags.ctrl ? 2 : 0) + (flags.alt ? 4 : 0);
@@ -434,11 +680,13 @@ TGLView.prototype = {
                 this.ZoomViewMouseMove(keys, position, true);
             } else
                 return true;
-        } else
+        } else {
             return true;
+        }
+
         this.MouseMovePosition = position;
-        this.MouseMoveMapPosition = ViewToMap(MouseMovePosition);
-        this.MouseMoveModelPosition = MapToModel(MouseMoveMapPosition);
+        this.MouseMoveMapPosition = this.ViewToMap(this.MouseMovePosition);
+        this.MouseMoveModelPosition = this.MapToModel(this.MouseMoveMapPosition);
         return false;
 
     },
@@ -454,37 +702,37 @@ TGLView.prototype = {
 
             } else if (this.FMouseRightButtonDown) {
                 if (position.sub(this.MouseDownPosition).abs() < 3) {
-                    // if (HMENU popup_menu = FMouseOperation?FMouseOperation.GetPopupMenu(FMouseOperation.PopupMenu):PopupMenu)
-                    // {
-                    //   POINT point = ViewToScreen(position);
-                    //   ClientToScreen(Handle,&point);
-                    //   TrackPopupMenu(popup_menu,TPM_LEFTALIGN,point.x,point.y,0,Handle,0);
-                    // }
+                    if (this.FMouseOperation) {
+                        this.FMouseOperation.GetPopupMenu(keys, position);
+                    }
+
                     this.EndTemporaryOperation();
-                } else
+                } else {
                     this.ViewMoved();
+                }
                 //  //this.SetCursor(this.FCursorOld);
                 this.FMouseRightButtonDown = false;
                 this.FEnableCapture = true;
+                return true;
 
 
             } else {
                 this.FMouseLeftButtonDown = false;
                 return true;
             }
-            this.ReleaseCapture();
+            //  this.ReleaseCapture();
         }
         return false;
     },
 
-    ProcessMouseDown: function( keys, position) {
+    ProcessMouseDown: function(keys, position) {
         if (this.FMouseOperation)
             this.FMouseOperation.MouseDown(keys, position);
         this.FMouseLeftButtonDown = true;
     },
     ProcessMouseMove: function(keys, position) {
         if (this.FMouseOperation) {
-          var moveOffset = this.MouseMovePosition.sub(position).abs();
+            var moveOffset = this.MouseMovePosition.sub(position).abs();
             if (moveOffset >= this.MinMove)
                 this.FMouseOperation.MouseMove(keys, position, this.FMouseLeftButtonDown);
             else
@@ -510,7 +758,7 @@ TGLView.prototype = {
     },
     ZoomView: function(position, scale) {
         if (arguments.length == 1) {
-            if (this.FGLBase && this.FGLBase.Zoom(this.TPosition2D(), scale)) {
+            if (this.FGLBase && this.FGLBase.Zoom(TPosition2D(), scale)) {
                 this.ViewChanged(true);
                 this.Invalidate();
             }
@@ -537,13 +785,13 @@ TGLView.prototype = {
 
     WMMouseDown: function(keys, x, y) {
         if (!this.FDoubleClicked) {
-            var point = {
-                x: x,
-                y: y
-            };
+            var position = TPosition2D(x, y);
+            var screenPoition = TPosition2D(x, y);
 
-            if (this.ProcessMouseDown0(keys, this.ScreenToView(point))) {
-                this.ProcessMouseDown(keys, this.GenCapturePosition(keys, x, y));
+            position = this.FGLBase.ScreenToModel(position);
+
+            if (this.ProcessMouseDown0(keys, screenPoition)) {
+                this.ProcessMouseDown(keys, this.GenCapturePosition(keys, position.X, position.Y));
                 if (this.FMouseOperation && this.FMouseLeftButtonDown && this.FMouseOperation.Paint2NeedDown)
                     this.FMouseOperation.Paint2();
             }
@@ -554,17 +802,16 @@ TGLView.prototype = {
     },
 
     WMMouseMove: function(keys, x, y) {
-        var point = {
-            x: x,
-            y: y
-        };
-        var position = (this.ScreenToView(point));
-      //  var dc = GetDC(Handle);
-        if (this.ProcessMouseMove0(keys, position)) {
+        var position = TPosition2D(x, y);
+        var screenPoition = TPosition2D(x, y);
+
+        position = this.FGLBase.ScreenToModel(position);
+        //  var dc = GetDC(Handle);
+        if (this.ProcessMouseMove0(keys, screenPoition)) {
             if (this.FMouseOperation && (!this.FMouseOperation.Paint2NeedDown || this.FMouseLeftButtonDown))
                 this.FMouseOperation.Paint2();
             this.Paint2();
-            position = this.GenCapturePosition(keys, x, y);
+            position = this.GenCapturePosition(keys, position.X, position.Y);
             this.ProcessMouseMove(keys, position);
             this.Paint2();
             if (this.FMouseOperation && (!this.FMouseOperation.Paint2NeedDown || this.FMouseLeftButtonDown))
@@ -574,15 +821,14 @@ TGLView.prototype = {
         this.MousePosition(position);
     },
     WMMouseUp: function(keys, x, y) {
-        var point = {
-            x: x,
-            y: y
-        };
+        var position = TPosition2D(x, y);
+        var screenPoition = TPosition2D(x, y);
+        position = this.FGLBase.ScreenToModel(position);
 
-        if (this.ProcessMouseUp0(keys, this.ScreenToView(point))) {
+        if (this.ProcessMouseUp0(keys, screenPoition)) {
             if (this.FMouseOperation && this.FMouseLeftButtonDown && this.FMouseOperation.Paint2NeedDown())
                 this.FMouseOperation.Paint2();
-            this.ProcessMouseUp(keys, this.GenCapturePosition(keys, x, y));
+            this.ProcessMouseUp(keys, this.GenCapturePosition(keys, position.X, position.Y));
         }
         //  this.ReleaseDC(Handle, dc);
         this.FDoubleClicked = false;
@@ -591,15 +837,33 @@ TGLView.prototype = {
         if (this.FGLBase) {
             var flags = GetMouseKeys(event);
             var op = (flags.shift ? 1 : 0) + (flags.alt ? -1 : 0);
-            var wheel = Exp(wheel_delta * (op > 0 ? 2.0 : op < 0 ? 0.5 : 1.0) / 600.0);
-            if (this.FGLBase.Zoom(TPosition2D(), wheel)) {
+            var wheel = Exp(wheeldelta * (op > 0 ? 2.0 : op < 0 ? 0.5 : 1.0) / 6.0);
+            var center = this.FGLBase.ScreenToView(TPosition2D(x, y));
+            center.Y = -center.Y;
+
+            if (this.FGLBase.Zoom(center, wheel)) {
                 this.ViewChanged(true);
-                this.Invalidate();
+                this.Paint();
             }
         }
     },
-    WMDblClick: function(keys) {
-        this.FDoubleClicked(true);
+    WMDblClick: function(keys, x, y) {
+        this.FDoubleClicked = true;
+
+        if (!this.FMouseOperation) {
+            return;
+        }
+
+        var flags = GetMouseKeys(event);
+        if (!flags.left) {
+            return;
+        }
+        var position = TPosition2D(x, y);
+        position = this.FGLBase.ScreenToModel(position);
+        //var nearestPosition = this.GenCapturePosition(keys, position.X, position.Y);
+
+        this.FMouseOperation.MouseDbClick(position);
+        this.FDoubleClicked = false;
     },
     WMKeyDown: function(key, nkeys) {
         this.OnKey(key, nkeys, -1);
@@ -667,42 +931,38 @@ TGLView.prototype = {
         if (this.OnRedrawView)
             this.OnRedrawView(redraw_all);
     },
-    DrawView: function(dc) {
-        var color = TRGBColor();
-        color.Color(Color);
+    DrawView: function() {
         if (this.FGLBase) {
-            this.FGLBase.GLPainting(false, dc);
             this.GLPaint(glview);
-            this.FGLBase.GLPainting(false, 0);
         }
         this.FNeedDraw = false;
         this.FViewChanged = false;
-        var flag = this.FMouseOperation && (!this.FMouseOperation.Paint2NeedDown() || this.FMouseLeftButtonDown);
+        var flag = this.FMouseOperation && (!this.FMouseOperation.Paint2NeedDown || this.FMouseLeftButtonDown);
         if (this.FMouseOperation0 || flag || this.FCapturedFlag) {
-            this.Paint(dc);
-            this.Paint2(dc);
+            this.Paint();
+            this.Paint2();
             if (this.FMouseOperation0)
-                this.FMouseOperation0.Paint(dc);
+                this.FMouseOperation0.Paint();
             if (this.FMouseOperation)
-                this.FMouseOperation.Paint(dc);
+                this.FMouseOperation.Paint();
             if (flag)
-                this.FMouseOperation.Paint2(dc);
+                this.FMouseOperation.Paint2();
             if (this.FCapturedFlag)
-                this.DrawCapturedPoint(dc);
+                this.DrawCapturedPoint();
         }
     },
-    DrawViewOnPaint: function() {
-        var ps = PAINTSTRUCT();
-        var dc = BeginPaint(Handle, ps);
-        SetBkColor(dc, Color);
-        this.DrawView(dc);
-        EndPaint(Handle, ps);
-    },
-    DrawViewDirectly: function() {
-        var dc = GetDC(Handle);
-        this.DrawView(dc);
-        ReleaseDC(Handle, dc);
-    },
+    //    DrawViewOnPaint: function() {
+    //        var ps = PAINTSTRUCT();
+    //        var dc = BeginPaint(Handle, ps);
+    //        SetBkColor(dc, Color);
+    //        this.DrawView(dc);
+    //        EndPaint(Handle, ps);
+    //    },
+    //    DrawViewDirectly: function() {
+    //        var dc = GetDC(Handle);
+    //        this.DrawView(dc);
+    //        ReleaseDC(Handle, dc);
+    //    },
     OnMessage: function(msg, wparam, lparam) {
         //       switch (msg) {
         //           case WM_PAINT:
@@ -813,8 +1073,8 @@ TGLView.prototype = {
         }
         if (this.FGLBase) {
             this.FGLBase.MapScale(mapscale);
-            NeedDraw(true);
-            Invalidate();
+            // NeedDraw(true);
+            // this.Paint();
         }
     },
     BasePosition: function() {
@@ -836,7 +1096,7 @@ TGLView.prototype = {
             this.RedrawView(false);
         }
     },
-    Invalidate:function() {
+    Invalidate: function() {
 
     }
 }

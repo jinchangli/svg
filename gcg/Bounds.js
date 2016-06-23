@@ -1,16 +1,22 @@
 var TRect = function() {
-  if (this == window) {
-      var obj = new TRect();
-      obj.constructor.apply(obj, arguments);
-      return obj;
-  }
+    if (this == window) {
+        var obj = new TRect();
+        obj.constructor.apply(obj, arguments);
+        return obj;
+    }
 }
 
 TRect.prototype = {
     left: null,
     top: null,
     right: null,
-    bottom: null
+    bottom: null,
+    width: function() {
+      return Abs(this.right - this.left);
+    },
+    height: function() {
+      return Abs(this.bottom-this.top);
+    }
 }
 
 function TBound2D() {
@@ -31,15 +37,20 @@ TBound2D.prototype = {
         this.Valid = false;
     },
     center: function() {
-        return new TVector2D((this.Min.X + this.Max.X) * 0.5, (this.Min.Y + this.Max.Y) * 0.5);
+        return TVector2D((this.Min.X + this.Max.X) * 0.5, (this.Min.Y + this.Max.Y) * 0.5);
     },
     size: function() {
-        return new TVector2D((this.Max.X - this.Min.X), (this.Max.Y - this.Min.Y));
+        return TVector2D((this.Max.X - this.Min.X), (this.Max.Y - this.Min.Y));
     },
     Clear: function() {
         this.Valid = false;
     },
     SetBound: function(x, y) {
+        if (x && x.hasOwnProperty("X") && x.hasOwnProperty("Y")) {
+            y = x.Y;
+            x = x.X;
+        }
+
         if (this.Valid) {
             if (this.Min.X > x)
                 this.Min.X = x;
