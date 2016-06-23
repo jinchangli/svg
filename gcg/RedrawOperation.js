@@ -80,11 +80,11 @@ prototype.drawLines = function(newPosition) {
     var newPoints = this.newPoints;
     var view = this.FGLView;
 
-    var screenPosition = view.FGLBase.LocalToScreen(newPosition);
+    var screenPosition = view.FGLBase.ModelToScreen(newPosition);
 
     if (newPoints && newPoints.length > 0) {
         ctx.beginPath();
-        var lastPosition = view.FGLBase.LocalToScreen(newPoints[newPoints.length - 1]);
+        var lastPosition = view.FGLBase.ModelToScreen(newPoints[newPoints.length - 1]);
         ctx.moveTo(lastPosition.X, lastPosition.Y);
         ctx.lineTo(screenPosition.X, screenPosition.Y);
         ctx.stroke();
@@ -92,6 +92,31 @@ prototype.drawLines = function(newPosition) {
 
     view.DrawSelectedPoint(newPosition);
     this.newPoints.push(newPosition);
+}
+
+prototype.restoreOperation = function() {
+
+    var newPoints = this.newPoints;
+
+    if (!newPoints || newPoints.length == 0) {
+        return;
+    }
+
+    var ctx = this.getOverlayer();
+    var f = view.FGLBase.ModelToScreen(newPoints[0]);
+
+    ctx.beginPath();
+    ctx.moveTo(f.X, f.Y);
+    for (var i = 1; i < newPoints.length; i++) {
+        var lastPosition = view.FGLBase.ModelToScreen(newPoints[i]);
+        ctx.lineTo(lastPosition.X, lastPosition.Y);
+    }
+
+    ctx.stroke();
+
+    for (var i = 0; i < newPoints.length; i++) {
+        view.DrawSelectedPoint(newPoints[i]);
+    }
 }
 
 prototype.OnMouseDown = function(keys, position) {
@@ -106,6 +131,7 @@ prototype.OnMouseDown = function(keys, position) {
 
     //if there is one
     if (nearestPosition) {
+
 
         if (nearestPosition.lineIndex >= 0) { // means a new line is selected
             var lineIndex = nearestPosition.lineIndex;
@@ -162,7 +188,7 @@ prototype.OnMouseCapture = function(localPosition) {
                 nearestPosition = result.position;
                 nearestPosition.lineIndex = lineIndex;
                 min = result.distance;
-                console.log(min);
+
             }
         }
     } else {
@@ -246,6 +272,8 @@ prototype.OnMouseOK = function() {
     path.isoLine = newPathPoints;
     //repaint the whole view
 
+    reorderNotes(path);
+
     calculateNotesPosition(path);
 
     view.Paint();
@@ -259,7 +287,7 @@ prototype.OnMouseUndo = function() {
     if (!this.newPoints || this.newPoints.length == 0) {
         return;
     }
-    var newPoints = clone(this.newPoints);
+    var newPoints = this.newPoints;
     var view = this.FGLView;
 
     view.ClearOverlayers();
@@ -296,7 +324,8 @@ prototype.OnMouseEnd = function() {
     }
 
     this.clearCachedData();
+    this.OnMouseCancel();
 
     $("canvas").css("cursor", "default");
-    $("#stateButtones button.selected").removeClass("selected");
+    $(".cutPath").removeClass("selected");
 }

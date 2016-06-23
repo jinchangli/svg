@@ -32,7 +32,13 @@ TGLView.prototype = {
     MouseMoveModelPosition: null,
     MinMove: null,
 
+    OutsideLayer: null,
+    WellsLayer: null,
+    BoundLayer: null,
+    FaultsLayer: null,
     LayerCtx: null,
+    LinesLayer:null,
+    NotesLayer:null,
     PointSelectLayerCtx: null,
     SelectedPoints: null,
 
@@ -76,11 +82,36 @@ TGLView.prototype = {
     CreateLayer: function() {
         var ctx = this.Canvas;
 
-        var hoverCanvas = $('<canvas class="clayer" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter($(ctx.canvas));
+        var wellsCanvas = $('<canvas class="clayer wells" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter($("#OutsideLayer"));
+        this.WellsLayer = wellsCanvas[0].getContext("2d");
+
+        var hoverCanvas = $('<canvas class="clayer" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter(wellsCanvas);
         this.LayerCtx = hoverCanvas[0].getContext("2d");
 
         var PointSelectCanvas = $('<canvas class="clayer pointSelect" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter(hoverCanvas);
         this.PointSelectLayerCtx = PointSelectCanvas[0].getContext("2d");
+
+        var boundLayer = $('<canvas class="clayer borders" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter(PointSelectCanvas);
+        this.BoundLayer = boundLayer[0].getContext("2d");
+
+        var faultsLayer = $('<canvas class="clayer faults" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter(boundLayer);
+        this.FaultsLayer = faultsLayer[0].getContext("2d");
+
+        this.OutsideLayer = $("#OutsideLayer")[0].getContext("2d");
+    },
+    DrawWells: function() {
+
+
+    },
+    DrawWell: function(well) {
+        var ctx = this.WellsLayer;
+
+        ctx.beiginPath();
+
+
+    },
+    DrawBounds: function() {
+
     },
     ClearOverlayers: function() {
         var ctx = this.Canvas;
@@ -101,9 +132,15 @@ TGLView.prototype = {
         var ctx = this.Canvas;
         var size = ctx.canvas.getBoundingClientRect();
         ctx.clearRect(0, 0, size.width, size.height);
+        var allCanvas = $("canvas.clayer");
+        allCanvas.each(function(index, ele) {
+            var ctx = ele.getContext("2d");
 
-        this.LayerCtx.clearRect(0, 0, size.width, size.height);
-        this.PointSelectLayerCtx.clearRect(0, 0, size.width, size.height);
+            ctx.clearRect(0, 0, size.width, size.height);
+        });
+
+        var size2 = this.OutsideLayer.canvas.getBoundingClientRect();
+        this.OutsideLayer.clearRect(0, 0, size2.width, size2.height);
 
         this.SelectedPoints = [];
     },
@@ -430,8 +467,8 @@ TGLView.prototype = {
     },
     ToggleHighLightPoint: function(X, Y, color, show) {
         //var rop2 = this.SetROP2(dc, R2_XORPEN);
-        var localP = TPosition2D(X, Y);
-        localP = view.FGLBase.LocalToScreen(localP);
+        var modelP = TPosition2D(X, Y);
+        modelP = view.FGLBase.ModelToScreen(modelP);
 
         if (!color) {
             color = "red";
@@ -447,15 +484,15 @@ TGLView.prototype = {
         // ctx.fill();
         //ctx.closePath();
         ctx.fillStyle = color;
-        ctx.rect(localP.X - 4, localP.Y - 4, 9, 9);
+        ctx.rect(modelP.X - 4, modelP.Y - 4, 9, 9);
         ctx.fill();
 
         ctx.restore();
         //this.DeleteObject(SelectObject(pen));
     },
     SetHighLightPoint: function(X, Y, color, layer) {
-        var localP = TPosition2D(X, Y);
-        localP = view.FGLBase.LocalToScreen(localP);
+        var modelP = TPosition2D(X, Y);
+        modelP = view.FGLBase.ModelToScreen(modelP);
         if (!color) {
             color = "red";
         }
@@ -464,53 +501,55 @@ TGLView.prototype = {
         if (layer) {
             ctx = layer;
         }
-
+        ctx.save();
         //var pen = this.SelectObject(dc, CreatePen(PS_SOLID, 0, 0x00FF0000)); //TBD HPEN
         ctx.beginPath();
         // ctx.rect(p.x - 2, p.y - 2, 5, 5);
         // ctx.fill();
         //ctx.closePath();
         ctx.fillStyle = color;
-        ctx.rect(localP.X - 4, localP.Y - 4, 9, 9);
+        ctx.rect(modelP.X - 4, modelP.Y - 4, 9, 9);
         ctx.fill();
+
+        ctx.restore();
     },
 
     ClearHighLightPoint: function(X, Y, layer) {
-        var localP = TPosition2D(X, Y);
-        localP = view.FGLBase.LocalToScreen(localP);
+        var modelP = TPosition2D(X, Y);
+        modelP = view.FGLBase.ModelToScreen(modelP);
 
         var ctx = this.LayerCtx;
         if (layer) {
             ctx = layer;
         }
 
-        ctx.clearRect(localP.X - 4, localP.Y - 4, 9, 9);
+        ctx.clearRect(modelP.X - 4, modelP.Y - 4, 9, 9);
     },
 
-    DrawSelectedPoint: function(localP) {
+    DrawSelectedPoint: function(modelP) {
         this.FCapturedFlag = false;
-        var index = this.IsPointSelected(localP);
+        var index = this.IsPointSelected(modelP);
         if (index != null) {
 
         } else {
-            this.SetHighLightPoint(localP.X, localP.Y, "blue", this.PointSelectLayerCtx);
-            this.SelectedPoints.push(localP);
+            this.SetHighLightPoint(modelP.X, modelP.Y, "blue", this.PointSelectLayerCtx);
+            this.SelectedPoints.push(modelP);
         }
     },
 
-    UnDrawSelectedPoint: function(localP) {
+    UnDrawSelectedPoint: function(modelP) {
         if (this.SelectedPoints == null || this.SelectedPoints.length == 0) {
             return;
         }
 
-        var points = [localP];
-        if (localP instanceof Array) {
-            points = localP;
+        var points = [modelP];
+        if (modelP instanceof Array) {
+            points = modelP;
         }
 
         for (var i = 0; i < points.length; i++) {
             var point = points[i];
-            var selectedIndex = this.IsPointSelected(localP);
+            var selectedIndex = this.IsPointSelected(modelP);
             if (selectedIndex != null) {
                 this.ClearHighLightPoint(point.X, point.Y, this.PointSelectLayerCtx);
 
@@ -528,7 +567,7 @@ TGLView.prototype = {
 
         this.SelectedPoints = [];
     },
-    IsPointSelected: function(localP) {
+    IsPointSelected: function(modelP) {
         var result = null;
         if (this.SelectedPoints == null || this.SelectedPoints.length == 0) {
             return result;
@@ -536,7 +575,7 @@ TGLView.prototype = {
 
         for (var i = 0; i < this.SelectedPoints.length; i++) {
             var point = this.SelectedPoints[i];
-            if (point.X == localP.X && point.Y == localP.Y) {
+            if (point.X == modelP.X && point.Y == modelP.Y) {
                 result = i;
                 break;
             }
@@ -749,7 +788,7 @@ TGLView.prototype = {
             var position = TPosition2D(x, y);
             var screenPoition = TPosition2D(x, y);
 
-            position = this.FGLBase.ScreenToLocal(position);
+            position = this.FGLBase.ScreenToModel(position);
 
             if (this.ProcessMouseDown0(keys, screenPoition)) {
                 this.ProcessMouseDown(keys, this.GenCapturePosition(keys, position.X, position.Y));
@@ -766,7 +805,7 @@ TGLView.prototype = {
         var position = TPosition2D(x, y);
         var screenPoition = TPosition2D(x, y);
 
-        position = this.FGLBase.ScreenToLocal(position);
+        position = this.FGLBase.ScreenToModel(position);
         //  var dc = GetDC(Handle);
         if (this.ProcessMouseMove0(keys, screenPoition)) {
             if (this.FMouseOperation && (!this.FMouseOperation.Paint2NeedDown || this.FMouseLeftButtonDown))
@@ -784,7 +823,7 @@ TGLView.prototype = {
     WMMouseUp: function(keys, x, y) {
         var position = TPosition2D(x, y);
         var screenPoition = TPosition2D(x, y);
-        position = this.FGLBase.ScreenToLocal(position);
+        position = this.FGLBase.ScreenToModel(position);
 
         if (this.ProcessMouseUp0(keys, screenPoition)) {
             if (this.FMouseOperation && this.FMouseLeftButtonDown && this.FMouseOperation.Paint2NeedDown())
@@ -798,10 +837,13 @@ TGLView.prototype = {
         if (this.FGLBase) {
             var flags = GetMouseKeys(event);
             var op = (flags.shift ? 1 : 0) + (flags.alt ? -1 : 0);
-            var wheel = Exp(wheel_delta * (op > 0 ? 2.0 : op < 0 ? 0.5 : 1.0) / 600.0);
-            if (this.FGLBase.Zoom(TPosition2D(), wheel)) {
+            var wheel = Exp(wheeldelta * (op > 0 ? 2.0 : op < 0 ? 0.5 : 1.0) / 6.0);
+            var center = this.FGLBase.ScreenToView(TPosition2D(x, y));
+            center.Y = -center.Y;
+
+            if (this.FGLBase.Zoom(center, wheel)) {
                 this.ViewChanged(true);
-                this.Invalidate();
+                this.Paint();
             }
         }
     },
@@ -817,7 +859,7 @@ TGLView.prototype = {
             return;
         }
         var position = TPosition2D(x, y);
-        position = this.FGLBase.ScreenToLocal(position);
+        position = this.FGLBase.ScreenToModel(position);
         //var nearestPosition = this.GenCapturePosition(keys, position.X, position.Y);
 
         this.FMouseOperation.MouseDbClick(position);
@@ -1031,8 +1073,8 @@ TGLView.prototype = {
         }
         if (this.FGLBase) {
             this.FGLBase.MapScale(mapscale);
-            NeedDraw(true);
-            Invalidate();
+            // NeedDraw(true);
+            // this.Paint();
         }
     },
     BasePosition: function() {

@@ -4,6 +4,7 @@ var state = (function() {
     var selectingPathDotsStatus = false;
     var selectedPoints = null;
     var pathIndex = null;
+    var wellNameChangeListeners = [];
 
     var pathSelected = function(path) {
         selectedPath = path;
@@ -25,6 +26,19 @@ var state = (function() {
     }
 
     return {
+        listenWellNameChange: function(listener) {
+          wellNameChangeListeners.push(listener);
+        },
+        unlistenWellNameChange: function(listener) {
+          if(wellNameChangeListeners.length>0){
+            wellNameChangeListeners.splice(0,1);
+          }
+        },
+        wellNameChanged: function(newName) {
+            for(var i=0; i<wellNameChangeListeners.length;i++){
+               wellNameChangeListeners[i](newName);
+            }
+        },
         getSelectedPath: function(params) {
             return selectedPath;
         },

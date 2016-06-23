@@ -30,21 +30,21 @@ prototype.buildContextMenu = function() {
             switch (key) {
 
                 case "apply":
-                    that.MouseOK();
+                    view.MouseOK();
                     break;
                 case "done":
                     {
-                        that.dataChangeConfirmed = true;
-                        that.OnMouseCancel();
+                        view.FMouseOperation.dataChangeConfirmed = true;
+                        view.MouseCancel();
                         view.MouseOperation(null);
                         break;
                     }
                 case "cancel":
-                    that.MouseCancel();
+                    view.MouseCancel();
                     break;
                 case "quit":
                     {
-                        that.MouseCancel();
+                        view.MouseCancel();
                         view.MouseOperation(null);
                         break;
                     }
@@ -69,6 +69,38 @@ prototype.buildContextMenu = function() {
     });
 }
 
+prototype.restoreOperation = function() {
+  var path = state.getSelectedPath();
+  var index = state.getSelectedPathIndex();
+
+  if (path) {
+      var points = path.isoLine;
+      var start, end;
+      if (this.smoothWholePath) {
+          this.selectOneSectionOnPath(path, this.selectedPointStartIndex);
+      } else if(this.selectedPoints && this.selectedPoints.length >0){
+          // var result = adjustSelectedPointsOrder(points, this.selectedPointStartIndex, this.selectedPointEndIndex);
+          // if (result == null) {
+          //     return;
+          // }
+          //
+          // var start = result.start;
+          // var end = (result.end + 1) % points.length;
+          //
+          // this.selectedPoints = [];
+          // for (var i = start; i != end; i = (i + 1) % points.length) {
+          //     view.DrawSelectedPoint(points[i]);
+          //     this.selectedPoints.push(points[i]);
+          // }
+
+        //  this.selectedPoints = [];
+          for (var i = 0; i < this.selectedPoints.length; i++) {
+              view.DrawSelectedPoint(this.selectedPoints[i]);
+          }
+      }
+  }
+}
+
 prototype.OnMouseDown = function(keys, position) {
     console.log("mouse down");
     var view = this.FGLView;
@@ -88,24 +120,24 @@ prototype.OnMouseDown = function(keys, position) {
 
         // if there is selected points
         if (this.selectedPoints.length > 0) {
-          var path = state.getSelectedPath();
-          var points = path.isoLine;
+            var path = state.getSelectedPath();
+            var points = path.isoLine;
 
             var currentPosition = nearestPosition;
 
             var result = adjustSelectedPointsOrder(points, this.selectedPointStartIndex, currentPosition.pointIndex);
 
-            if(result == null){
-              return;
+            if (result == null) {
+                return;
             }
 
             var start = result.start;
-            var end = (result.end+1)%points.length;
+            var end = (result.end + 1) % points.length;
 
             this.selectedPoints = [];
-            for(var i=start; i!=end; i= (i+1)%points.length){
-              view.DrawSelectedPoint(points[i]);
-              this.selectedPoints.push(points[i]);
+            for (var i = start; i != end; i = (i + 1) % points.length) {
+                view.DrawSelectedPoint(points[i]);
+                this.selectedPoints.push(points[i]);
             }
 
             this.selectedPointEndIndex = currentPosition.pointIndex;
@@ -118,8 +150,8 @@ prototype.OnMouseDown = function(keys, position) {
     }
 }
 
-prototype.OnMouseDbClick = function(localPosition) {
-    var nearestPosition = this.OnMouseCapture(localPosition);
+prototype.OnMouseDbClick = function(modelPosition) {
+    var nearestPosition = this.OnMouseCapture(modelPosition);
 
     if (!nearestPosition) {
         return;
@@ -132,24 +164,28 @@ prototype.OnMouseDbClick = function(localPosition) {
     }
 
     var path = state.getSelectedPath();
-    var points = path.isoLine;
-    var start = (nearestPosition.pointIndex+1)%points.length;
-    var end = nearestPosition.pointIndex;
+    this.selectOneSectionOnPath(path,nearestPosition.pointIndex);
+}
 
-    for (var pointIndex = start; pointIndex != end ; pointIndex = (pointIndex+1)%points.length) {
-        var point = points[pointIndex % points.length];
-        if (point.B) {
-            break;
-        }
+prototype.selectOneSectionOnPath = function(path, onePointIndex) {
+  var points = path.isoLine;
+  var start = (onePointIndex + 1) % points.length;
+  var end = onePointIndex;
 
-        view.DrawSelectedPoint(point);
-            this.selectedPointEndIndex = pointIndex;
-    }
+  for (var pointIndex = start; pointIndex != end; pointIndex = (pointIndex + 1) % points.length) {
+      var point = points[pointIndex % points.length];
+      if (point.B) {
+          break;
+      }
 
-    if(pointIndex != end){
-      start = (nearestPosition.pointIndex - 1 + points.length)%points.length;
-      end = nearestPosition.pointIndex;
-      for (var pointIndex = start; pointIndex != end ; pointIndex = (pointIndex-1)%points.length) {
+      view.DrawSelectedPoint(point);
+      this.selectedPointEndIndex = pointIndex;
+  }
+
+  if (pointIndex != end) {
+      start = (onePointIndex - 1 + points.length) % points.length;
+      end = onePointIndex;
+      for (var pointIndex = start; pointIndex != end; pointIndex = (pointIndex - 1+ points.length) % points.length) {
           var point = points[pointIndex % points.length];
           if (point.B) {
               break;
@@ -159,17 +195,17 @@ prototype.OnMouseDbClick = function(localPosition) {
           this.selectedPointStartIndex = pointIndex;
       }
 
-    }else{
-        this.selectedPointStartIndex = 0;
-        this.selectedPointEndIndex = points.length-1;
-    }
+  } else {
+      this.selectedPointStartIndex = 0;
+      this.selectedPointEndIndex = points.length - 1;
+  }
 
-    this.smoothWholePath = true;
+  this.smoothWholePath = true;
 }
 
-prototype.OnMouseCapture = function(localPosition) {
-    $("#localPosition").text(Math.floor(localPosition.X) + ", " + Math.floor(localPosition.Y));
-    var position = localPosition;
+prototype.OnMouseCapture = function(modelPosition) {
+    $("#localPosition").text(Math.floor(modelPosition.X) + ", " + Math.floor(modelPosition.Y));
+    var position = modelPosition;
     var min = view.FGLBase.ViewToModel_Vector(TVector2D(3, 3)).X;
     var nearestPosition;
     var path = state.getSelectedPath();
@@ -221,43 +257,43 @@ prototype.OnMouseOK = function() {
     if (path) {
         var points = path.isoLine;
         var start, end;
-        if(this.smoothWholePath){
-           start  =this.selectedPointStartIndex;
-           end = this.selectedPointEndIndex;
-           for(var i=start; i<=end; i++){
-             var point = points[i];
-             var newPoint = clone(point);
+        if (this.smoothWholePath) {
+            start = this.selectedPointStartIndex;
+            end = this.selectedPointEndIndex;
+            for (var i = start;  i != end; i = (i + 1) % points.length) {
+                var point = points[i];
+                var newPoint = clone(point);
 
-             var last = (i - 1 + points.length) % points.length;
-             var next = (i + 1) % points.length;
+                var last = (i - 1 + points.length) % points.length;
+                var next = (i + 1) % points.length;
 
-                 newPoint.X = (points[last].X + 2 * point.X + points[next].X) / 4;
-                 newPoint.Y = (points[last].Y + 2 * point.Y + points[next].Y) / 4;
-                 selectedPoints.push(newPoint);
+                newPoint.X = (points[last].X + 2 * point.X + points[next].X) / 4;
+                newPoint.Y = (points[last].Y + 2 * point.Y + points[next].Y) / 4;
+                selectedPoints.push(newPoint);
 
-            points[i] = newPoint;
-           }
-        }else{
-          var result = adjustSelectedPointsOrder(points, this.selectedPointStartIndex, this.selectedPointEndIndex);
-          if(result == null){
-            return;
-          }
+                points[i] = newPoint;
+            }
+        } else {
+            var result = adjustSelectedPointsOrder(points, this.selectedPointStartIndex, this.selectedPointEndIndex);
+            if (result == null) {
+                return;
+            }
 
-          start = result.start;
-          end = (result.end + 1)%points.length;
-          for(var i=start; i!=end; i= (i+1)%points.length){
-            var point = points[i];
-            var newPoint = clone(point);
+            start = result.start;
+            end = (result.end + 1) % points.length;
+            for (var i = start; i != end; i = (i + 1) % points.length) {
+                var point = points[i];
+                var newPoint = clone(point);
 
-            var last = (i - 1 + points.length) % points.length;
-            var next = (i + 1) % points.length;
+                var last = (i - 1 + points.length) % points.length;
+                var next = (i + 1) % points.length;
 
-            newPoint.X = (points[last].X + 2 * point.X + points[next].X) / 4;
-            newPoint.Y = (points[last].Y + 2 * point.Y + points[next].Y) / 4;
-            selectedPoints.push(newPoint);
+                newPoint.X = (points[last].X + 2 * point.X + points[next].X) / 4;
+                newPoint.Y = (points[last].Y + 2 * point.Y + points[next].Y) / 4;
+                selectedPoints.push(newPoint);
 
-            points[i] = newPoint;
-          }
+                points[i] = newPoint;
+            }
         }
     }
 
@@ -274,6 +310,9 @@ prototype.OnMouseCancel = function() {
     this.FGLView.ClearOverlayers();
     this.selectedPoints = [];
     state.clearSelectedState();
+    this.selectedPointStartIndex = -1;
+    this.selectedPointEndIndex = -1;
+    this.smoothWholePath = false;
 }
 
 prototype.OnMouseEnd = function() {
@@ -286,7 +325,8 @@ prototype.OnMouseEnd = function() {
     }
 
     this.clearCachedData();
+    this.OnMouseCancel();
 
     $("canvas").css("cursor", "default");
-    $("#stateButtones button.selected").removeClass("selected");
+    $(".smooth").removeClass("selected");
 }
