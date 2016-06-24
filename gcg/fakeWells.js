@@ -6,7 +6,7 @@ var FakeWellsOperation = function() {
     this.userCanSelectPoint = true;
     this.tempWellsArray = [];
     this.boundsArray = [];
-    this.wellPen = new WellPen();
+    this.wellPen = new WellPen(this.FGLView);
     this.getOverlayer();
 }
 
@@ -120,6 +120,7 @@ prototype.MouseDown = function(keys, position) {
     //if there is one
     if (!this.wellEditing) {
         var index = this.tempWellsArray.length + "";
+        var view = this.FGLView;
         var wellPosition = TPosition2D(position.X, position.Y)
         wellPosition.Z = Math.random() * 100;
 
@@ -180,10 +181,7 @@ prototype.drawWell = function(newPosition, wellName, wellType) {
     var ctx = this.getOverlayer();
     var view = this.FGLView;
 
-    var screenPosition = view.FGLBase.ModelToScreen(newPosition);
-
-
-    this.wellPen.drawWell(ctx, screenPosition, wellType, wellName);
+    this.wellPen.drawWell(ctx, newPosition, wellType, wellName);
 }
 
 prototype.MouseOK = function(params) {

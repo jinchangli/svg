@@ -1,9 +1,9 @@
 var Well = function() {
-      if (this == window) {
-          var obj = new Well();
-          obj.constructor.apply(obj, arguments);
-          return obj;
-      }
+    if (this == window) {
+        var obj = new Well();
+        obj.constructor.apply(obj, arguments);
+        return obj;
+    }
 }
 
 Well.Types = {
@@ -24,14 +24,28 @@ Well.prototype.X = null;
 Well.prototype.Y = null;
 Well.prototype.N = null;
 Well.prototype.constructor = function(position, type, name) {
-  this.X = position.X;
-  this.Y = position.Y;
-  this.T = type;
-  this.N = name;
+    this.X = position.X;
+    this.Y = position.Y;
+    this.T = type;
+    this.N = name;
 }
 
-var WellPen = function() {
+var WellPen = function(view) {
+    this.view = view;
+    this.space = "Model";
+    this.direction = TVector2D(-1, 1);
+    var d = this.direction;
+    if(d.X<0){
+      this.textAlign = "right";
+    }
 
+    if(d.X==0){
+      this.textAlign = "center";
+    }
+
+    if(d.x>0){
+      this.textAlign = "left";
+    }
 }
 
 var prototype = WellPen.prototype = {}
@@ -43,8 +57,18 @@ var wellColors = {
     lightBlue: 'lightblue',
     purple: 'purple',
     yellow: 'yellow',
-    white:"white"
+    white: "white"
 };
+
+prototype.getCorner = function(ctx, position, offset) {
+    var view = this.view;
+    var fp = convertPosition(view, ctx, position);
+    var direction =
+    offset.X *= direction.X;
+    offset.Y *= direction.Y;
+
+    return fp.add(offset);
+}
 
 prototype.drawWell = function(ctx, position, wellType, name, size) {
     var funcName = "drawZiPenOilWell";
@@ -83,44 +107,26 @@ prototype.drawWell = function(ctx, position, wellType, name, size) {
 
     }
 
-    this[funcName](ctx, position, name, size);
-}
+    if (!size) {
+        size = state.wellSize;
+    }
 
-prototype.drawShuiYuanWell = function (ctx, position, name, size) {
-  ctx.save();
+    var transformStartFunc = "Begin" + this.space;
+    var transformEndFunc = "End" + this.space;
 
-  var xOffset = position.X;
-  var yOffset = position.Y;
-
-  //ctx.moveTo(xOffset, yOffset);
-  if (!size) {
-      size = 10;
-  }
-
-  ctx.beginPath();
-
-  ctx.strokeStyle = wellColors.lightBlue;
-  ctx.fillStyle = wellColors.lightBlue;
-  ctx.arc(xOffset, yOffset, size, 0, 2 * Math.PI);
-  ctx.fill();
-  ctx.closePath();
-
-  ctx.beginPath();
-
-  ctx.strokeStyle = wellColors.white;
-  ctx.fillStyle = wellColors.white;
-  ctx.arc(xOffset, yOffset, size-1, 0,  Math.PI);
-  ctx.fill();
-  ctx.closePath();
-
-  ctx.fillText(name, xOffset + size + 3, yOffset - size - 3);
-
-  ctx.restore();
-};
-
-prototype.drawZiPenOilWell = function(ctx, position, name, size) {
+    if (this.view.FGLBase[transformStartFunc]) {
+        this.view.FGLBase[transformStartFunc](ctx);
+    }
     ctx.save();
 
+    this[funcName](ctx, position, name, size);
+    ctx.restore();
+    if (this.view.FGLBase[transformEndFunc]) {
+        this.view.FGLBase[transformEndFunc](ctx);
+    }
+}
+
+prototype.drawZiPenOilWell = function(ctx, position, name, size) {
     var xOffset = position.X;
     var yOffset = position.Y;
 
@@ -138,13 +144,9 @@ prototype.drawZiPenOilWell = function(ctx, position, name, size) {
     ctx.closePath();
 
     ctx.fillText(name, xOffset + size + 3, yOffset - size - 3);
-
-    ctx.restore();
 }
 
 prototype.drawJiXieOilWell = function(ctx, position, name, size) {
-    ctx.save();
-
     var xOffset = position.X;
     var yOffset = position.Y;
 
@@ -170,13 +172,9 @@ prototype.drawJiXieOilWell = function(ctx, position, name, size) {
     ctx.closePath();
 
     ctx.fillText(name, xOffset + size + 3, yOffset - size - 3);
-
-    ctx.restore();
 }
 
 prototype.drawZhuShuiWell = function(ctx, position, name, size) {
-    ctx.save();
-
     var xOffset = position.X;
     var yOffset = position.Y;
 
@@ -216,13 +214,9 @@ prototype.drawZhuShuiWell = function(ctx, position, name, size) {
 
 
     ctx.fillText(name, xOffset, yOffset - size - 3);
-
-    ctx.restore();
 }
 
 prototype.drawZhuQiWell = function(ctx, position, name, size) {
-    ctx.save();
-
     var xOffset = position.X;
     var yOffset = position.Y;
 
@@ -262,16 +256,12 @@ prototype.drawZhuQiWell = function(ctx, position, name, size) {
 
     ctx.fill();
     ctx.closePath();
-    ctx.textAlign = "left";
-    ctx.fillText(name, xOffset + 2, yOffset - size - 3);
 
-    ctx.restore();
+    ctx.fillText(name, xOffset + 2, yOffset - size - 3);
 }
 
 
 prototype.drawZhuShuiQiWell = function(ctx, position, name, size) {
-    ctx.save();
-
     var xOffset = position.X;
     var yOffset = position.Y;
 
@@ -319,14 +309,10 @@ prototype.drawZhuShuiQiWell = function(ctx, position, name, size) {
 
 
     ctx.fillText(name, xOffset, yOffset - size - 3);
-
-    ctx.restore();
 }
 
 
 prototype.drawQiWell = function(ctx, position, name, size) {
-    ctx.save();
-
     var xOffset = position.X;
     var yOffset = position.Y;
 
@@ -374,170 +360,152 @@ prototype.drawQiWell = function(ctx, position, name, size) {
 
     ctx.fillStyle = wellColors.orange;
     ctx.fillText(name, xOffset + size, yOffset - size - 3);
-
-    ctx.restore();
 }
 
 prototype.drawShuiYuanWell = function(ctx, position, name, size) {
-    ctx.save();
+        var xOffset = position.X;
+        var yOffset = position.Y;
 
-    var xOffset = position.X;
-    var yOffset = position.Y;
+        //ctx.moveTo(xOffset, yOffset);
+        if (!size) {
+            size = 100;
+        }
 
-    //ctx.moveTo(xOffset, yOffset);
-    if (!size) {
-        size = 10;
-    }
+        ctx.beginPath();
 
+        ctx.strokeStyle = wellColors.lightBlue;
+        ctx.fillStyle = wellColors.lightBlue;
+        ctx.arc(xOffset, yOffset, size, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.closePath();
 
+        ctx.beginPath();
 
-    ctx.beginPath();
-    ctx.strokeStyle = wellColors.lightBlue;
-    ctx.fillStyle = wellColors.lightBlue;
+        ctx.strokeStyle = wellColors.white;
+        ctx.fillStyle = wellColors.white;
+        ctx.arc(xOffset, yOffset, 0.9 * size, 0, Math.PI);
+        ctx.fill();
+        ctx.closePath();
 
-    ctx.arc(xOffset, yOffset, size, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.closePath();
-    ctx.beginPath();
-    ctx.fillStyle = "#fff";
-    ctx.arc(xOffset, yOffset, size - 1, 0, Math.PI);
-    ctx.fill();
+        var offset = TVector2D(size, size);
+        var nP = this.getCorner(ctx, position, offset);
+        ctx.fillStyle = wellColors.lightBlue;
+        drawModelText(ctx, nP, state.wellNameSize, 0, name, this.textAlign);
+        };
 
-    ctx.closePath();
+        prototype.drawSaltWell = function(ctx, position, name, size) {
+            var xOffset = position.X;
+            var yOffset = position.Y;
 
-    ctx.fillStyle = wellColors.lightBlue;
-    ctx.textAlign = "center";
-    ctx.fillText(name, xOffset + 1, yOffset - size - 2);
+            //ctx.moveTo(xOffset, yOffset);
+            if (!size) {
+                size = 10;
+            }
 
-    ctx.restore();
-}
+            size = 0.8 * size;
 
+            var size2 = 2.9 * size;
 
-prototype.drawSaltWell = function(ctx, position, name, size) {
-    ctx.save();
+            ctx.strokeStyle = wellColors.purple;
+            ctx.fillStyle = wellColors.purple;
+            ctx.lineWidth = 1;
 
-    var xOffset = position.X;
-    var yOffset = position.Y;
+            ctx.beginPath();
+            // ctx.scale(2, 2);
 
-    //ctx.moveTo(xOffset, yOffset);
-    if (!size) {
-        size = 10;
-    }
+            ctx.moveTo(xOffset, yOffset - size2);
+            ctx.lineTo(xOffset - 0.95 * size, yOffset - 0.2 * size);
+            ctx.lineTo(xOffset + 0.95 * size, yOffset - 0.2 * size);
+            ctx.fill();
 
-    size = 0.8 * size;
+            ctx.closePath();
 
-    var size2 = 2.9 * size;
+            ctx.beginPath();
 
-    ctx.strokeStyle = wellColors.purple;
-    ctx.fillStyle = wellColors.purple;
-    ctx.lineWidth = 1;
+            ctx.fillStyle = "#fff";
+            ctx.arc(xOffset, yOffset, 0.8 * size, 0, 2 * Math.PI);
+            ctx.stroke();
 
-    ctx.beginPath();
-    // ctx.scale(2, 2);
+            ctx.arc(xOffset, yOffset, 0.6 * size, 0, 2 * Math.PI);
+            ctx.fill();
 
-    ctx.moveTo(xOffset, yOffset - size2);
-    ctx.lineTo(xOffset - 0.95 * size, yOffset - 0.2 * size);
-    ctx.lineTo(xOffset + 0.95 * size, yOffset - 0.2 * size);
-    ctx.fill();
+            ctx.closePath();
 
-    ctx.closePath();
+            ctx.fillStyle = wellColors.purple;
+            ctx.fillText(name, xOffset + size, yOffset - size - 3);
+        }
 
-    ctx.beginPath();
+        prototype.drawTanOilWell = function(ctx, position, name, size) {
+            var xOffset = position.X;
+            var yOffset = position.Y;
 
-    ctx.fillStyle = "#fff";
-    ctx.arc(xOffset, yOffset, 0.8 * size, 0, 2 * Math.PI);
-    ctx.stroke();
+            //ctx.moveTo(xOffset, yOffset);
+            if (!size) {
+                size = 10;
+            }
 
-    ctx.arc(xOffset, yOffset, 0.6 * size, 0, 2 * Math.PI);
-    ctx.fill();
+            size = 1.5 * size;
 
-    ctx.closePath();
+            ctx.strokeStyle = wellColors.red;
+            ctx.fillStyle = wellColors.red;
+            ctx.lineWidth = 1;
 
-    ctx.fillStyle = wellColors.purple;
-    ctx.fillText(name, xOffset + size, yOffset - size - 3);
+            ctx.beginPath();
+            ctx.arc(xOffset, yOffset, size, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.closePath();
 
-    ctx.restore();
-}
+            ctx.beginPath();
+            ctx.fillStyle = "#fff";
+            ctx.arc(xOffset, yOffset, size - 1, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.closePath();
 
-prototype.drawTanOilWell = function(ctx, position, name, size) {
-    ctx.save();
+            ctx.beginPath();
+            ctx.fillStyle = wellColors.red;
+            ctx.arc(xOffset, yOffset, 0.6 * size, 0, 2 * Math.PI);
+            ctx.fill();
 
-    var xOffset = position.X;
-    var yOffset = position.Y;
+            ctx.closePath();
 
-    //ctx.moveTo(xOffset, yOffset);
-    if (!size) {
-        size = 10;
-    }
-
-    size = 1.5 * size;
-
-    ctx.strokeStyle = wellColors.red;
-    ctx.fillStyle = wellColors.red;
-    ctx.lineWidth = 1;
-
-    ctx.beginPath();
-    ctx.arc(xOffset, yOffset, size, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.closePath();
-
-    ctx.beginPath();
-    ctx.fillStyle = "#fff";
-    ctx.arc(xOffset, yOffset, size - 1, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.closePath();
-
-    ctx.beginPath();
-    ctx.fillStyle = wellColors.red;
-    ctx.arc(xOffset, yOffset, 0.6 * size, 0, 2 * Math.PI);
-    ctx.fill();
-
-    ctx.closePath();
-
-    ctx.fillStyle = wellColors.red;
-    ctx.fillText(name, xOffset + size, yOffset - size - 3);
-
-    ctx.restore();
-}
+            ctx.fillStyle = wellColors.red;
+            ctx.fillText(name, xOffset + size, yOffset - size - 3);
+        }
 
 
-prototype.drawTanQiWell = function(ctx, position, name, size) {
-    ctx.save();
+        prototype.drawTanQiWell = function(ctx, position, name, size) {
+            var xOffset = position.X;
+            var yOffset = position.Y;
 
-    var xOffset = position.X;
-    var yOffset = position.Y;
+            //ctx.moveTo(xOffset, yOffset);
+            if (!size) {
+                size = 10;
+            }
 
-    //ctx.moveTo(xOffset, yOffset);
-    if (!size) {
-        size = 10;
-    }
+            size = 1.5 * size;
 
-    size = 1.5 * size;
+            ctx.strokeStyle = wellColors.yellow;
+            ctx.fillStyle = wellColors.yellow;
+            ctx.lineWidth = 1;
 
-    ctx.strokeStyle = wellColors.yellow;
-    ctx.fillStyle = wellColors.yellow;
-    ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(xOffset, yOffset, size, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.closePath();
 
-    ctx.beginPath();
-    ctx.arc(xOffset, yOffset, size, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.closePath();
+            ctx.beginPath();
+            ctx.fillStyle = "#fff";
+            ctx.arc(xOffset, yOffset, size - 1, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.closePath();
 
-    ctx.beginPath();
-    ctx.fillStyle = "#fff";
-    ctx.arc(xOffset, yOffset, size - 1, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.closePath();
+            ctx.beginPath();
+            ctx.fillStyle = wellColors.yellow;
+            ctx.arc(xOffset, yOffset, 0.6 * size, 0, 2 * Math.PI);
+            ctx.fill();
 
-    ctx.beginPath();
-    ctx.fillStyle = wellColors.yellow;
-    ctx.arc(xOffset, yOffset, 0.6 * size, 0, 2 * Math.PI);
-    ctx.fill();
+            ctx.closePath();
 
-    ctx.closePath();
-
-    ctx.fillStyle = wellColors.yellow;
-    ctx.fillText(name, xOffset + size, yOffset - size - 3);
-
-    ctx.restore();
-}
+            ctx.fillStyle = wellColors.yellow;
+            ctx.fillText(name, xOffset + size, yOffset - size - 3);
+        }

@@ -37,10 +37,12 @@ TGLView.prototype = {
     BoundLayer: null,
     FaultsLayer: null,
     LayerCtx: null,
-    LinesLayer:null,
-    NotesLayer:null,
+    LinesLayer: null,
+    NotesLayer: null,
     PointSelectLayerCtx: null,
+    RectSelectLayer: null,
     SelectedPoints: null,
+
 
     constructor: function(canvas) {
         with(this) {
@@ -81,23 +83,37 @@ TGLView.prototype = {
     },
     CreateLayer: function() {
         var ctx = this.Canvas;
+        this.screenWidth = $(ctx.canvas).width();
+        this.screenHeight = $(ctx.canvas).height();
 
-        var wellsCanvas = $('<canvas class="clayer wells" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter($("#OutsideLayer"));
+        var wellsCanvas = $('<canvas class="clayer wells" width="' + this.screenWidth + '" height="' + this.screenHeight + '"></canvas>"').insertAfter($("#OutsideLayer"));
         this.WellsLayer = wellsCanvas[0].getContext("2d");
 
-        var hoverCanvas = $('<canvas class="clayer" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter(wellsCanvas);
+        var hoverCanvas = $('<canvas class="clayer" width="' + this.screenWidth + '" height="' + this.screenHeight + '"></canvas>"').insertAfter(wellsCanvas);
         this.LayerCtx = hoverCanvas[0].getContext("2d");
 
-        var PointSelectCanvas = $('<canvas class="clayer pointSelect" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter(hoverCanvas);
+        var PointSelectCanvas = $('<canvas class="clayer pointSelect" width="' + this.screenWidth + '" height="' + this.screenHeight + '"></canvas>"').insertAfter(hoverCanvas);
         this.PointSelectLayerCtx = PointSelectCanvas[0].getContext("2d");
 
-        var boundLayer = $('<canvas class="clayer borders" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter(PointSelectCanvas);
+        var boundLayer = $('<canvas class="clayer borders" width="' + this.screenWidth + '" height="' + this.screenHeight + '"></canvas>"').insertAfter(PointSelectCanvas);
         this.BoundLayer = boundLayer[0].getContext("2d");
 
-        var faultsLayer = $('<canvas class="clayer faults" width="' + $(ctx.canvas).width() + '" height="' + $(ctx.canvas).height() + '"></canvas>"').insertAfter(boundLayer);
+        var faultsLayer = $('<canvas class="clayer faults" width="' + this.screenWidth + '" height="' + this.screenHeight + '"></canvas>"').insertAfter(boundLayer);
         this.FaultsLayer = faultsLayer[0].getContext("2d");
 
+        var rectSelectLayer = $('<canvas class="clayer rectselect" width="' + this.screenWidth + '" height="' + this.screenHeight + '"></canvas>"').insertAfter(faultsLayer);
+        this.RectSelectLayer = rectSelectLayer[0].getContext("2d");
+
         this.OutsideLayer = $("#OutsideLayer")[0].getContext("2d");
+    },
+    DrawRectSelect: function(sp, ep) {
+        var ctx = this.RectSelectLayer;
+
+        ctx.clearRect(0, 0, this.screenWidth, this.screenHeight);
+
+        this.FGLBase.BeginWin(ctx);
+        ctx.strokeRect(sp.X, sp.Y, ep.X - sp.X, ep.Y - sp.Y);
+        this.FGLBase.EndWin(ctx);
     },
     DrawWells: function() {
 
@@ -666,6 +682,11 @@ TGLView.prototype = {
                 } else if (flag == 1) {
                     //this.SetCursor(Cursor_ZoomView);
                     this.ZoomViewMouseMove(keys, position, true);
+                } else if (flag == 2) {
+                    var s = this.MouseDownPosition;
+                    var e = position;
+
+                    this.DrawRectSelect(TPosition2D(Min(s.X, e.X), Min(s.Y, e.Y)), TPosition2D(Max(s.X, e.X), Max(s.Y, e.Y)));
                 }
             } else if (flags.left) {
                 //this.SetCursor(Cursor_ZoomView);
@@ -708,7 +729,13 @@ TGLView.prototype = {
 
                     this.EndTemporaryOperation();
                 } else {
-                    this.ViewMoved();
+                    // this.ViewMoved();
+                    if (flags.ctrl) {
+                        var start = this.FGLBase.ScreenToView(this.MouseDownPosition);
+                        var end = this.FGLBase.ScreenToView(position);
+                        this.FGLBase.ZoomRect(start, end);
+                        this.Paint();
+                    }
                 }
                 //  //this.SetCursor(this.FCursorOld);
                 this.FMouseRightButtonDown = false;

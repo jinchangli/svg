@@ -25,6 +25,10 @@ $(function() {
         ctx.restore();
 
         view.FGLBase.GLNotes(data.isoLines, fontScale, fontScale, fontSize, "serif");
+
+        view.FGLBase.GLWells();
+        view.FGLBase.GLFaults();
+
         //
         view.FGLBase.DrawCanvasBorder();
         view.FGLBase.DrawViewGridXY(0.1);
@@ -221,24 +225,30 @@ $(function() {
         window.location.href = "index.html";
     }
 
-    // var wells =[];
-    // if(data.wells){
-    //   for(var i=0; i< dta.wells.length; i++)
-    //   {
-    //     var well
-    //     wells.push();
-    //   }
-    // }
+    // var wells = planTPositionArray(data.wells);
+    // var faults = planTPositionArray(data.faults);
+    // var bounds = planTPositionArray(data.bounds);
 
-    $.get({
-         url: "json/geo2.json",
-        //url: "http://localhost:2665/api",
-        data: {
-            chazhi: data.chazhi,
-            smooth: data.smooth,
-            step: data.step?data.step:0,
-            wells: "[]"
-        },
+    var newData = {
+        chazhi: data.chazhi,
+        smooth: data.smooth,
+        step: data.step ? data.step : 0,
+        wells: data.wells,
+        faults: data.faults,
+        bounds: data.bounds
+    };
+
+    state.passData = newData;
+
+    var dataStr =JSON.stringify(newData);
+
+    $.ajax({
+        url: "json/geo2.json",
+        // url: "http://localhost:2665/api",
+        // contentType: "application/x-www-form-urlencoded",
+        contentType: "application/json",
+        data:dataStr,
+        method: "get",
         cache: false,
         dataType: "json"
     }).done(function(data) {
@@ -260,12 +270,20 @@ $(function() {
 
                 calculateNotesPosition(data.isoLines[i]);
             }
-            //
+
             state.viewData = clone(data);
+
+            view.wellPoints = state.passData.wells;
+            view.borderPoints = state.passData.bounds;
+            view.faults = state.passData.faults;
+
             var bound = utility.GenBoundBox(data.isoLines);
             view.MapScale(1000);
             state.noteFontSize = mapToModel(0.003);
             state.lineWidth = mapToModel(0.0001);
+            state.maskLineWidth = screenToModel(1);
+            state.wellNameSize =   state.noteFontSize;
+
             view.ModelBound(bound);
             view.ZoomViewExtent();
             fontScale = 96 / view.FGLBase.ViewScale();

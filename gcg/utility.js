@@ -43,6 +43,14 @@ var Floor = function() {
     return Math.floor.apply(Math, arguments);
 }
 
+var Min = function() {
+    return Math.min.apply(Math, arguments);
+}
+
+var Max = function() {
+    return Math.max.apply(Math, arguments);
+}
+
 Math.log10 = Math.log10 || function(x) {
     return Math.log(x) / Math.LN10;
 };
@@ -523,59 +531,77 @@ var DoGenNotes = function(start, end, notes, points) {
 }
 
 function convertPosition(view, ctx, position) {
-  var source = "Model";
+    var source = "Model";
 
     var space = ctx.space;
     if (!space) {
         space = 'Screen';
     }
-    if(source !== space){
-      var f =source+ "To" + space;
-      if (view.FGLBase[f]) {
-        return view.FGLBase[f](position);
-      }
+    if (source !== space) {
+        var f = source + "To" + space;
+        if (view.FGLBase[f]) {
+            return view.FGLBase[f](position);
+        } else {
+            console.log("没有找到方法");
+            return null;
+        }
+    } else {
+        return position;
     }
-
-    console.log("没有找到方法");
-    return null;
 }
 
-function drawModelText(ctx, position, size, direction, text) {
-    var baseScale = 1/32 * size;
+function drawModelText(ctx, position, size, direction, text, textAlign) {
+    var baseScale = 1 / 32 * size;
     var font = "32px serif";
 
     ctx.save();
     ctx.font = font;
-    ctx.textAlign="center";
+    ctx.textAlign = textAlign?textAlign:"center";
     ctx.textBaseline = "middle";
     ctx.translate(position.X, position.Y);
     ctx.scale(baseScale, -baseScale);
     ctx.rotate(-direction);
-    ctx.fillText(text, 0,0);
+    ctx.fillText(text, 0, 0);
     ctx.restore();
 }
 
 function measureModelText(ctx, text) {
-
-    ctx.font =  "32px serif";
-    var width =  ctx.measureText(text, 0,0).width;
+    ctx.font = "32px serif";
+    var width = ctx.measureText(text, 0, 0).width;
     var height = 32;
 
-    var aS = view.ViewScale()/360;
-    width = screenToModel(width/aS);
-    height = screenToModel(height/aS);
+    var aS = view.ViewScale() / 360;
+    width = screenToModel(width / aS);
+    height = screenToModel(height / aS);
 
-    return {w: width, h:height};
+    return {
+        w: width,
+        h: height
+    };
 }
 
-function mapToModel(length){
-    var v = TVector2D(length, 0);
-    v = view.FGLBase.MapToModel_Vector(v);
-    return v.X;
+function mapToModel(length) {
+    return length * view.MapScale();
 }
 
-function screenToModel(length){
-  var v = TVector2D(length, 0);
-  v = view.FGLBase.ViewToModel_Vector(v);
-  return v.X;
+function screenToModel(length) {
+    // var v = TVector2D(length, 0);
+    // v = view.FGLBase.ViewToModel_Vector(v);
+    // return v.X;
+    var that = view.FGLBase;
+
+    return length / (that.ViewResolution * that.FViewScale) * that.FMapScale;
+}
+
+function planTPositionArray(array) {
+    var wells = [];
+    if (array) {
+        for (var i = 0; i < array.length; i++) {
+            var well = array[i];
+            wells.push(well.X);
+            wells.push(well.Y);
+            wells.push(well.Z);
+        }
+    }
+    return wells;
 }

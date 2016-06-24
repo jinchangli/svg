@@ -372,7 +372,7 @@ TGLBase.prototype = {
                 var size = measureModelText(ctx, text);
                 var dx = Math.floor(0.5 * size.w) + 0.5;
                 var dy = Math.floor(0.5 * size.h) + 0.5;
-                ctx.lineWidth = screenToModel(1);
+                ctx.lineWidth = state.maskLineWidth;
 
                 ctx.moveTo(-dx, dy);
                 ctx.lineTo(-dx, -dy);
@@ -651,15 +651,16 @@ TGLBase.prototype = {
         this.DoZoom(1 / 1.25)
         this.DoMoveCenterTo(position);
     },
-    ZoomRect: function(rect) { //矩形区域放大
+    ZoomRect: function(start, end) { //矩形区域放大
         var rst = false;
-        tmp_center(rect.Center());
-        if (!IsZero(tmp_center)) {
-            this.DoMoveToCenter(tmp_center);
+        var center = start.add(end).div(2);
+
+        if (center.X != 0 || center.Y != 0) {
+            this.DoMoveToCenter(center);
             rst = true;
         }
-        size(rect.Size());
-        var vrect = ViewRect();
+        var size = TVector2D(Abs(end.X-start.X), Abs(end.Y-start.Y));
+        var vrect = this.ViewRect();
         var W = vrect.right - vrect.left - 1,
             H = vrect.bottom - vrect.top - 1;
         if (size.X > 0 && size.Y > 0) {

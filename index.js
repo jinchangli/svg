@@ -27,8 +27,8 @@ $(function() {
 
         view.FGLBase.DrawCanvasBorder();
         view.FGLBase.DrawViewGridXY(0.1);
-        view.FGLBase.drawBiliChi();
-        
+        // view.FGLBase.drawBiliChi();
+
         view.FGLBase.GLBound();
         view.FGLBase.GLWells();
         view.FGLBase.GLFaults();
@@ -211,8 +211,8 @@ $(function() {
     });
 
     $.ajax({
-        url: "json/geo2.json",
-        //  url: "http://localhost:2665/api",
+         url: "json/geo2.json",
+        // url: "http://localhost:2665/api",
         cache: false,
         dataType: "json"
     }).done(function(data) {
@@ -234,6 +234,9 @@ $(function() {
             fontScale = 96 / view.FGLBase.ViewScale();
             state.noteFontSize = mapToModel(0.003);
             state.lineWidth = mapToModel(0.0001);
+            state.maskLineWidth = screenToModel(1);
+            state.wellSize = mapToModel(0.3);
+            state.wellNameSize =  mapToModel(0.3);
             view.Paint();
 
             // createColorLegend($(".canvasContainer").parent(), data.clrTbl);
@@ -249,7 +252,7 @@ $(function() {
         var data = {
             "wells": view.wellPoints,
             "faults": view.faults,
-            "bounds": view.boundsArray,
+            "bounds": view.borderPoints,
             "datasource": $("[name='dataSource']").val(),
             "step": $("[name='step']").val(),
             "chazhi": $("[name='chazhi']").val(),
