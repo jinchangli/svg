@@ -3,7 +3,7 @@
 //------------------------------------------------------------------------------
 var TGLBase = function() {
     this.constructor.apply(this, arguments);
-    this.wellPen = new WellPen();
+    this.wellPen = new WellPen(this.FGLView);
 };
 
 TGLBase.prototype = {
