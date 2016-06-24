@@ -63,7 +63,7 @@ var wellColors = {
 prototype.getCorner = function(ctx, position, offset) {
     var view = this.view;
     var fp = convertPosition(view, ctx, position);
-    var direction =
+    var direction = this.direction;
     offset.X *= direction.X;
     offset.Y *= direction.Y;
 

@@ -184,14 +184,10 @@ TGLBase.prototype = {
         var view = this.FGLView;
         var ctx = view.WellsLayer;
 
-        this.BeginWin(ctx);
-
         for (var i = 0; i < newPoints.length; i++) {
             var position = TPosition2D(newPoints[i].X, newPoints[i].Y)
             this.drawWell(position, newPoints[i].N, newPoints[i].T);
         }
-
-        this.EndWin(ctx);
     },
 
     drawWell: function(newPosition, wellName, wellType) {
@@ -200,7 +196,7 @@ TGLBase.prototype = {
 
         var screenPosition = convertPosition(view, ctx, newPosition);
 
-        this.wellPen.drawWell(ctx, screenPosition, wellType, wellName);
+        this.wellPen.drawWell(ctx, newPosition, wellType, wellName);
 
     },
     GLFaults: function() {
