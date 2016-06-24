@@ -650,7 +650,7 @@ TGLBase.prototype = {
     ZoomRect: function(start, end) { //矩形区域放大
         var rst = false;
         var center = start.add(end).div(2);
-
+        center.Y = - center.Y;
         if (center.X != 0 || center.Y != 0) {
             this.DoMoveToCenter(center);
             rst = true;
